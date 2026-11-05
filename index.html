@@ -214,15 +214,15 @@
 
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-[11px] font-medium text-slate-500 mb-1">Nama Vendor:</label>
-                                <select id="filter-vendor" class="w-full px-2.5 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                                    <option value="">Semua Vendor</option>
-                                </select>
-                            </div>
-                            <div>
                                 <label class="block text-[11px] font-medium text-slate-500 mb-1">Document Date:</label>
                                 <select id="filter-date" class="w-full px-2.5 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                                     <option value="">Semua Tanggal</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-500 mb-1">Nama Vendor:</label>
+                                <select id="filter-vendor" class="w-full px-2.5 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                    <option value="">Semua Vendor</option>
                                 </select>
                             </div>
                         </div>
@@ -253,7 +253,7 @@
                             <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-2 shadow">
                                 <i class="fa-solid fa-file-excel text-lg"></i> Unduh Report Excel (.xlsx)
                             </button>
-                            <button onclick="openUploadGDriveModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-2 shadow">
+                            <button onclick="uploadViaAPI()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3.5 py-2 rounded-lg font-bold transition flex items-center gap-2 shadow">
                                 <i class="fa-brands fa-google-drive text-amber-300 text-lg"></i> Upload Report to GDrive
                             </button>
                         </div>
@@ -319,47 +319,31 @@
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5">
                     <i class="fa-solid fa-circle-info text-amber-600 text-base mt-0.5 shrink-0"></i>
                     <div class="text-amber-900 leading-relaxed">
-                        Folder Target: <br>
+                        Folder Target Google Drive: <br>
                         <span class="font-mono text-[11px] font-bold underline break-all">https://drive.google.com/drive/folders/165ImQNxt34-15gIrlmNQhfe4UMoidkgc</span>
                     </div>
                 </div>
 
                 <div class="space-y-2">
-                    <h4 class="font-bold text-slate-700">Pilih Metode Upload:</h4>
-                    
-                    <!-- Option 1: Auto Download + Open GDrive Folder -->
-                    <button onclick="uploadViaDirectFolder()" class="w-full text-left bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 rounded-xl p-3.5 transition flex items-center justify-between group">
+                    <!-- Option 1: Auto Download + Open GDrive Folder (Utama & Praktis) -->
+                    <button onclick="uploadViaDirectFolder()" class="w-full text-left bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200 rounded-xl p-3.5 transition flex items-center justify-between group">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 bg-emerald-100 text-emerald-700 rounded-lg flex items-center justify-center font-bold group-hover:scale-105 transition">
+                            <div class="w-9 h-9 bg-emerald-600 text-white rounded-lg flex items-center justify-center font-bold group-hover:scale-105 transition">
                                 <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
                             </div>
                             <div>
-                                <h5 class="font-bold text-slate-800">Unduh & Buka Folder GDrive</h5>
-                                <p class="text-[11px] text-slate-500">Otomatis unduh Excel terbaru & buka folder Google Drive</p>
+                                <h5 class="font-bold text-emerald-900">1-Klik Unduh & Buka Folder GDrive</h5>
+                                <p class="text-[11px] text-emerald-700">Otomatis unduh Excel terbaru & buka folder Google Drive</p>
                             </div>
                         </div>
-                        <i class="fa-solid fa-chevron-right text-slate-400 group-hover:text-indigo-600 transition"></i>
-                    </button>
-
-                    <!-- Option 2: Upload API directly -->
-                    <button onclick="uploadViaAPI()" class="w-full text-left bg-slate-50 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 rounded-xl p-3.5 transition flex items-center justify-between group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center font-bold group-hover:scale-105 transition">
-                                <i class="fa-brands fa-google-drive text-lg"></i>
-                            </div>
-                            <div>
-                                <h5 class="font-bold text-slate-800">Upload Langsung via Web API</h5>
-                                <p class="text-[11px] text-slate-500">Kirim berkas langsung ke folder Drive (Membutuhkan Login)</p>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-400 group-hover:text-indigo-600 transition"></i>
+                        <i class="fa-solid fa-chevron-right text-emerald-600 transition"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Modal Footer -->
             <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
-                <button onclick="closeUploadGDriveModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition text-xs">Batal</button>
+                <button onclick="closeUploadGDriveModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition text-xs">Tutup</button>
             </div>
         </div>
     </div>
@@ -424,8 +408,8 @@
         function resumeSavedSession() {
             if (cargoData && cargoData.length > 0) {
                 renderTable();
-                updateVendorDropdown();
                 updateDateDropdown();
+                updateVendorDropdown();
                 updateViewMode();
                 showToast("Pekerjaan sebelumnya berhasil dimuat!", "success");
             } else {
@@ -440,8 +424,8 @@
                 localStorage.removeItem('cargo_expedisi_last_saved');
                 updateDraftBanner();
                 renderTable();
-                updateVendorDropdown();
                 updateDateDropdown();
+                updateVendorDropdown();
                 updateViewMode();
                 showToast("Draf tersimpan berhasil dihapus.", "info");
             }
@@ -792,8 +776,8 @@
 
                 cargoData = rawJson.map(row => parseRowData(row));
                 saveDataLocally(true);
-                updateVendorDropdown();
                 updateDateDropdown();
+                updateVendorDropdown();
                 renderTable();
                 updateViewMode();
                 showToast(`Berhasil memuat ${cargoData.length} data koli dari Google Sheets!`, "success");
@@ -823,8 +807,8 @@
 
                     cargoData = rawJson.map(row => parseRowData(row));
                     saveDataLocally(true);
-                    updateVendorDropdown();
                     updateDateDropdown();
+                    updateVendorDropdown();
                     renderTable();
                     updateViewMode();
                     showToast(`Berhasil mengimpor ${cargoData.length} data koli!`, "success");
@@ -841,8 +825,8 @@
             if (file && file.sampleData) {
                 cargoData = file.sampleData.map(row => parseRowData(row));
                 saveDataLocally(true);
-                updateVendorDropdown();
                 updateDateDropdown();
+                updateVendorDropdown();
                 renderTable();
                 updateViewMode();
                 closeDriveModal();
@@ -850,58 +834,53 @@
             }
         }
 
-        function updateVendorDropdown() {
-            const select = document.getElementById('filter-vendor');
-            if (!select) return;
-            select.innerHTML = '<option value="">Semua Vendor</option>';
-
-            const vendors = [...new Set(cargoData.map(i => i["Vendor Name"]).filter(Boolean))].sort();
-            vendors.forEach(v => {
-                const opt = document.createElement('option');
-                opt.value = v;
-                opt.innerText = v;
-                select.appendChild(opt);
-            });
-        }
-
+        // Update Dropdown Filter Document Date secara unik dari data
         function updateDateDropdown() {
-            const select = document.getElementById('filter-date');
-            if (!select) return;
-            const currentSelected = select.value;
-            select.innerHTML = '<option value="">Semua Tanggal</option>';
+            const selectDate = document.getElementById('filter-date');
+            if (!selectDate) return;
+            const currentSelected = selectDate.value;
+            selectDate.innerHTML = '<option value="">Semua Tanggal</option>';
 
             const dates = [...new Set(cargoData.map(i => i["Document Date"]).filter(Boolean))].sort();
             dates.forEach(d => {
                 const opt = document.createElement('option');
                 opt.value = d;
                 opt.innerText = d;
-                if (d === currentSelected) opt.selected = true;
-                select.appendChild(opt);
+                selectDate.appendChild(opt);
             });
+
+            if (dates.includes(currentSelected)) {
+                selectDate.value = currentSelected;
+            }
         }
 
+        // Update Dropdown Filter Vendor (Relational berdasarkan filter Tanggal yang dipilih)
         function updateVendorDropdown() {
-            const select = document.getElementById('filter-vendor');
-            const selectedDate = document.getElementById('filter-date') ? document.getElementById('filter-date').value : "";
-            if (!select) return;
-            
-            const currentSelectedVendor = select.value;
-            select.innerHTML = '<option value="">Semua Vendor</option>';
+            const selectVendor = document.getElementById('filter-vendor');
+            const selectedDate = document.getElementById('filter-date') ? document.getElementById('filter-date').value : '';
+            if (!selectVendor) return;
 
-            // Saring data berdasarkan tanggal jika ada tanggal yang dipilih
-            let filteredList = cargoData;
-            if (selectedDate) {
-                filteredList = cargoData.filter(i => i["Document Date"] === selectedDate);
-            }
+            const currentSelectedVendor = selectVendor.value;
+            selectVendor.innerHTML = '<option value="">Semua Vendor</option>';
 
-            const vendors = [...new Set(filteredList.map(i => i["Vendor Name"]).filter(Boolean))].sort();
+            // Jika tanggal dipilih, filter data berdasarkan tanggal tersebut dahulu
+            const targetData = selectedDate 
+                ? cargoData.filter(i => i["Document Date"] === selectedDate) 
+                : cargoData;
+
+            const vendors = [...new Set(targetData.map(i => i["Vendor Name"]).filter(Boolean))].sort();
             vendors.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v;
                 opt.innerText = v;
-                if (v === currentSelectedVendor) opt.selected = true;
-                select.appendChild(opt);
+                selectVendor.appendChild(opt);
             });
+
+            if (vendors.includes(currentSelectedVendor)) {
+                selectVendor.value = currentSelectedVendor;
+            } else {
+                selectVendor.value = '';
+            }
         }
 
         function getFilteredData() {
@@ -974,40 +953,6 @@
             });
         }
 
-        function toggleStatus(noKoli, vendorName, docDate) {
-            const matches = cargoData.filter(i => 
-                i["No. Koli"] === noKoli && 
-                i["Vendor Name"] === vendorName && 
-                i["Document Date"] === docDate
-            );
-
-            if (matches.length > 0) {
-                const currentStatus = matches[0].Status;
-                const newStatus = currentStatus === 'Termuat' ? 'Ready on Depo' : 'Termuat';
-                matches.forEach(item => { item.Status = newStatus; });
-                saveDataLocally(true);
-                renderTable();
-            }
-        }
-
-        function markFilteredAsTermuat() {
-            const data = getFilteredData();
-            if (data.length === 0) return;
-            data.forEach(item => { item.Status = 'Termuat'; });
-            saveDataLocally(true);
-            renderTable();
-            showToast(`Menandai ${data.length} koli sebagai Termuat`, "success");
-        }
-
-        function markFilteredAsReady() {
-            const data = getFilteredData();
-            if (data.length === 0) return;
-            data.forEach(item => { item.Status = 'Ready on Depo'; });
-            saveDataLocally(true);
-            renderTable();
-            showToast(`Menandai ${data.length} koli sebagai Ready on Depo`, "info");
-        }
-
         function resetData() {
             if (confirm("Apakah Anda yakin ingin mengosongkan data dan memuat sesi baru?")) {
                 cargoData = [];
@@ -1015,8 +960,8 @@
                 localStorage.removeItem('cargo_expedisi_last_saved');
                 updateDraftBanner();
                 renderTable();
-                updateVendorDropdown();
                 updateDateDropdown();
+                updateVendorDropdown();
                 updateViewMode();
                 showToast("Sesi berhasil di-reset", "info");
             }
@@ -1042,30 +987,106 @@
             setTimeout(() => {
                 openGDriveLink();
                 closeUploadGDriveModal();
-                showToast("File terunduh & Folder GDrive dibuka. Tinggal taruh (drop) file di folder tersebut!", "success");
-            }, 800);
+                showToast("File Excel terunduh! Silakan drag/taruh file ke folder Google Drive yang baru terbuka.", "success");
+            }, 500);
         }
 
-        function uploadViaAPI() {
-            exportExcel();
-            closeUploadGDriveModal();
-            showToast("Memulai proses upload ke Folder GDrive (165ImQNxt34-15gIrlmNQhfe4UMoidkgc)...", "info");
-            setTimeout(() => {
-                showToast("Berhasil mengunggah berkas ke Google Drive!", "success");
-            }, 1500);
-        }
+                async function uploadViaAPI() {
+                    console.log("[DEBUG] Tombol upload diklik. Memulai proses uploadViaAPI...");
+                    
+                    if (cargoData.length === 0) {
+                        console.warn("[DEBUG] Data kosong, proses dihentikan.");
+                        showToast("Tidak ada data untuk di-upload", "error");
+                        return;
+                    }
+                
+                    showToast("Mempersiapkan data Excel...", "info");
+                    console.log(`[DEBUG] Memproses ${cargoData.length} baris data...`);
+                
+                    try {
+                        const exportRows = cargoData.map(item => {
+                            let rowObj = item._original && typeof item._original === 'object' ? { ...item._original } : {};
+                            rowObj["Document Date"] = item["Document Date"];
+                            rowObj["Vendor Name"] = item["Vendor Name"];
+                            rowObj["Plant"] = item["Plant"];
+                            rowObj["Inbound Num."] = item["Inbound Num."];
+                            rowObj["Material Description"] = item["Material Description"];
+                            rowObj["No. Koli"] = item["No. Koli"];
+                            rowObj["STATUS"] = item.Status;
+                            return rowObj;
+                        });
+                
+                        const worksheet = XLSX.utils.json_to_sheet(exportRows);
+                        const workbook = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(workbook, worksheet, "Report Expedisi");
+                        console.log("[DEBUG] File Excel berhasil di-generate di memori.");
+                
+                        const excelBase64 = XLSX.write(workbook, { bookType: 'xlsx', type: 'base64' });
+                        // Format nama file dengan tanggal dan jam-menit-detik agar tidak bentrok di hari yang sama
+                        const now = new Date();
+                        const dateStr = now.toISOString().slice(0, 10);
+                        const timeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0') + String(now.getSeconds()).padStart(2, '0');
+                        const fileName = `Report_Loading_Expedisi_${dateStr}_${timeStr}.xlsx`;
+                
+                        const webAppUrl = "https://script.google.com/macros/s/AKfycbxRmziQ_Er-PsueIN5_DBeUI3K8dM2IYnMjGRW5inAqgNePqyGtiq2T72TPJ6ozzV1iZw/exec";
+                        console.log("[DEBUG] Target Web App URL:", webAppUrl);
+                
+                        showToast("Mengunggah report ke folder GDrive...", "info");
+                        console.log("[DEBUG] Mengirim request POST ke Google Apps Script...");
+                
+                        const payload = JSON.stringify({
+                            filename: fileName,
+                            content: excelBase64
+                        });
+
+                        try {
+                            const response = await fetch(webAppUrl, {
+                                method: 'POST',
+                                mode: 'cors',
+                                headers: {
+                                    "Content-Type": "text/plain;charset=utf-8", 
+                                },
+                                body: payload
+                            });
+
+                            const result = await response.json();
+                            if (result.status === "success") {
+                                if (typeof closeUploadGDriveModal === 'function') closeUploadGDriveModal();
+                                showToast("Upload Berhasil! Report langsung masuk ke folder tim.", "success");
+                                return;
+                            }
+                        } catch (corsErr) {
+                            console.warn("[DEBUG] CORS standard fetch gagal, mengupayakan pengiriman via mode no-cors...", corsErr);
+                            
+                            // Fallback pengiriman menggunakan no-cors agar payload tetap sampai ke Google Apps Script Web App
+                            await fetch(webAppUrl, {
+                                method: 'POST',
+                                mode: 'no-cors',
+                                headers: {
+                                    "Content-Type": "text/plain;charset=utf-8",
+                                },
+                                body: payload
+                            });
+
+                            if (typeof closeUploadGDriveModal === 'function') closeUploadGDriveModal();
+                            showToast("Upload Terkirim ke Google Drive!", "success");
+                            return;
+                        }
+                    } catch (error) {
+                        console.error("[DEBUG] Terjadi error kritis pada fungsi upload:", error);
+                        showToast("Gagal terhubung ke GDrive Web App. Mengunduh file Excel lokal...", "error");
+                        exportExcel();
+                    }
+                }
 
         function exportExcel() {
             if (cargoData.length === 0) {
-                showToast("Tidak ada data untuk diunduh", "error");
+                showToast("Tidak ada data untuk diekspor", "error");
                 return;
             }
 
             const exportRows = cargoData.map(item => {
-                let rowObj = {};
-                if (item._original && typeof item._original === 'object') {
-                    rowObj = { ...item._original };
-                }
+                let rowObj = item._original && typeof item._original === 'object' ? { ...item._original } : {};
                 rowObj["Document Date"] = item["Document Date"];
                 rowObj["Vendor Name"] = item["Vendor Name"];
                 rowObj["Plant"] = item["Plant"];
@@ -1079,28 +1100,92 @@
             const worksheet = XLSX.utils.json_to_sheet(exportRows);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Report Expedisi");
-            XLSX.writeFile(workbook, `Report_Loading_Expedisi_${new Date().toISOString().slice(0,10)}.xlsx`);
-            showToast("Report Excel berhasil diunduh!", "success");
+
+            // Format nama file dengan tanggal dan jam-menit-detik
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10);
+            const timeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0') + String(now.getSeconds()).padStart(2, '0');
+            const fileName = `Report_Loading_Expedisi_${dateStr}_${timeStr}.xlsx`;
+
+            XLSX.writeFile(workbook, fileName);
+            showToast("Laporan Excel berhasil diunduh!", "success");
         }
 
+        // Toggle Status Termuat <-> Ready on Depo (Berdasarkan Koli, Vendor, & Tanggal)
+        function toggleStatus(noKoli, vendorName, docDate) {
+            const targets = cargoData.filter(item => 
+                String(item["No. Koli"]) === String(noKoli) && 
+                item["Vendor Name"] === vendorName && 
+                item["Document Date"] === docDate
+            );
+
+            if (targets.length > 0) {
+                const currentStatus = targets[0].Status;
+                const newStatus = currentStatus === 'Termuat' ? 'Ready on Depo' : 'Termuat';
+
+                targets.forEach(item => {
+                    item.Status = newStatus;
+                });
+
+                saveDataLocally(true);
+                renderTable();
+                showToast(`${targets.length} item No. Koli ${noKoli} diubah menjadi ${newStatus}`, newStatus === 'Termuat' ? 'success' : 'info');
+            }
+        }
+
+        // Bulk status change untuk data hasil filter
+        function markFilteredAsTermuat() {
+            const data = getFilteredData();
+            if (data.length === 0) {
+                showToast("Tidak ada data terfilter untuk ditandai", "error");
+                return;
+            }
+            data.forEach(item => item.Status = 'Termuat');
+            saveDataLocally(true);
+            renderTable();
+            showToast(`${data.length} item ditandai Termuat`, "success");
+        }
+
+        function markFilteredAsReady() {
+            const data = getFilteredData();
+            if (data.length === 0) {
+                showToast("Tidak ada data terfilter untuk ditandai", "error");
+                return;
+            }
+            data.forEach(item => item.Status = 'Ready on Depo');
+            saveDataLocally(true);
+            renderTable();
+            showToast(`${data.length} item di-set Ready Depo`, "info");
+        }
+
+        // Scanner Barcode via Kamera HP
         function toggleScanner() {
             const container = document.getElementById('scanner-container');
             if (!container) return;
 
             if (container.classList.contains('hidden')) {
                 container.classList.remove('hidden');
-                html5QrcodeScanner = new Html5Qrcode("reader");
+                if (!html5QrcodeScanner) {
+                    html5QrcodeScanner = new Html5Qrcode("reader");
+                }
                 html5QrcodeScanner.start(
                     { facingMode: "environment" },
                     { fps: 10, qrbox: { width: 250, height: 150 } },
                     (decodedText) => {
-                        document.getElementById('search-koli').value = decodedText;
-                        renderTable();
-                        showToast(`Scanned: ${decodedText}`, "success");
+                        const searchInput = document.getElementById('search-koli');
+                        if (searchInput) {
+                            searchInput.value = decodedText;
+                            renderTable();
+                            showToast(`Barcode terdeteksi: ${decodedText}`, "success");
+                        }
+                        toggleScanner();
                     },
-                    (errorMessage) => {}
+                    (errorMessage) => {
+                        // Ignoring scan failures
+                    }
                 ).catch(err => {
-                    showToast("Gagal mengakses kamera", "error");
+                    console.error("Gagal memulai kamera:", err);
+                    showToast("Kamera tidak dapat diakses", "error");
                     container.classList.add('hidden');
                 });
             } else {
@@ -1116,26 +1201,27 @@
             }
         }
 
-        // Initialize event listeners after DOM loaded
+        // Event Listener & Initialization
         document.addEventListener('DOMContentLoaded', () => {
+            checkExistingDraft();
+
             const fileInput = document.getElementById('excel-file-input');
             if (fileInput) fileInput.addEventListener('change', handleFileUpload);
 
-            const searchKoli = document.getElementById('search-koli');
-            const filterVendor = document.getElementById('filter-vendor');
+            const searchInput = document.getElementById('search-koli');
+            if (searchInput) searchInput.addEventListener('input', renderTable);
+
             const filterDate = document.getElementById('filter-date');
+            if (filterDate) {
+                filterDate.addEventListener('change', () => {
+                    updateVendorDropdown();
+                    renderTable();
+                });
+            }
 
-            if (searchKoli) searchKoli.addEventListener('input', renderTable);
+            const filterVendor = document.getElementById('filter-vendor');
             if (filterVendor) filterVendor.addEventListener('change', renderTable);
-            if (filterDate) filterDate.addEventListener('change', () => {
-                updateVendorDropdown(); // Perbarui daftar vendor sesuai tanggal yang baru dipilih
-                renderTable();
-            });
 
-            const btnSyncGDrive = document.getElementById('btn-sync-gdrive');
-            if (btnSyncGDrive) btnSyncGDrive.addEventListener('click', openGDriveLink);
-
-            checkExistingDraft();
             if (cargoData && cargoData.length > 0) {
                 updateDateDropdown();
                 updateVendorDropdown();
