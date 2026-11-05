@@ -30,7 +30,7 @@
             <div class="flex items-center space-x-3">
                 <i class="fa-solid font-bold fa-truck-ramp-box text-2xl text-yellow-400"></i>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight">Checklist Cargo Expedisi</h1>
+                    <h1 class="font-bold text-lg leading-tight uppercase">CHECKLIST LOADING BARANG</h1>
                     <p class="text-xs text-indigo-200">Auto-Save Memori Lokal & Offline Ready</p>
                 </div>
             </div>
@@ -93,7 +93,7 @@
                 <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
                     <i class="fa-solid fa-file-import"></i>
                 </div>
-                <h2 class="text-base font-bold text-slate-800">Pilih Data Manifest Expedisi Baru</h2>
+                <h2 class="text-base font-bold text-slate-800">masukan data DOM</h2>
                 <p class="text-xs text-slate-500">Masukkan link Google Spreadsheet, pilih dari Drive, atau upload file Excel</p>
             </div>
 
@@ -217,9 +217,9 @@
                     <!-- Input Filters -->
                     <div class="space-y-2">
                         <div>
-                            <label class="block text-[11px] font-medium text-slate-500 mb-1">Nomor Koli / Barcode:</label>
+                            <label class="block text-[11px] font-medium text-slate-500 mb-1">Nomor Koli / Barcode / Material Desc:</label>
                             <div class="relative">
-                                <input type="text" id="search-koli" placeholder="Ketik / Scan No. Koli..." class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
+                                <input type="text" id="search-koli" placeholder="Ketik / Scan No. Koli / Material..." class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
                                 <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
                             </div>
                         </div>
@@ -850,11 +850,23 @@
         // Update Dropdown Filter Document Date secara unik dari data
         function updateDateDropdown() {
             const selectDate = document.getElementById('filter-date');
+            const searchKeyword = document.getElementById('search-koli') ? document.getElementById('search-koli').value.trim().toLowerCase() : '';
+            const selectedVendor = document.getElementById('filter-vendor') ? document.getElementById('filter-vendor').value : '';
             if (!selectDate) return;
+
             const currentSelected = selectDate.value;
             selectDate.innerHTML = '<option value="">Semua Tanggal</option>';
 
-            const dates = [...new Set(cargoData.map(i => i["Document Date"]).filter(Boolean))].sort();
+            // Filter data yang cocok dengan pencarian & vendor yang dipilih
+            const targetData = cargoData.filter(item => {
+                const matchKoli = !searchKeyword || String(item["No. Koli"]).toLowerCase().includes(searchKeyword);
+                const matchMatDesc = !searchKeyword || String(item["Material Description"]).toLowerCase().includes(searchKeyword);
+                const matchSearch = matchKoli || matchMatDesc;
+                const matchVendor = !selectedVendor || item["Vendor Name"] === selectedVendor;
+                return matchSearch && matchVendor;
+            });
+
+            const dates = [...new Set(targetData.map(i => i["Document Date"]).filter(Boolean))].sort();
             dates.forEach(d => {
                 const opt = document.createElement('option');
                 opt.value = d;
@@ -864,24 +876,34 @@
 
             if (dates.includes(currentSelected)) {
                 selectDate.value = currentSelected;
+            } else {
+                selectDate.value = '';
             }
         }
 
-        // Update Dropdown Filter Vendor (Relational berdasarkan filter Tanggal yang dipilih)
+        // Update Dropdown Filter Vendor (Relational berdasarkan pencarian & filter Tanggal yang dipilih)
         function updateVendorDropdown() {
             const selectVendor = document.getElementById('filter-vendor');
             const selectedDate = document.getElementById('filter-date') ? document.getElementById('filter-date').value : '';
+            const searchKeyword = document.getElementById('search-koli') ? document.getElementById('search-koli').value.trim().toLowerCase() : '';
             if (!selectVendor) return;
 
             const currentSelectedVendor = selectVendor.value;
             selectVendor.innerHTML = '<option value="">Semua Vendor</option>';
 
-            // Jika tanggal dipilih, filter data berdasarkan tanggal tersebut dahulu
-            const targetData = selectedDate 
-                ? cargoData.filter(i => i["Document Date"] === selectedDate) 
-                : cargoData;
+            // Filter data berdasarkan kata kunci pencarian & tanggal yang dipilih
+            const targetData = cargoData.filter(item => {
+                const matchKoli = !searchKeyword || String(item["No. Koli"]).toLowerCase().includes(searchKeyword);
+                const matchMatDesc = !searchKeyword || String(item["Material Description"]).toLowerCase().includes(searchKeyword);
+                const matchSearch = matchKoli || matchMatDesc;
+                const matchDate = !selectedDate || item["Document Date"] === selectedDate;
+                return matchSearch && matchDate;
+            });
 
-            const vendors = [...new Set(targetData.map(i => i["Vendor Name"]).filter(Boolean))].sort();
+            // Mengambil vendor unik dan mengurutkan secara alfabetis (A-Z)
+            const vendors = [...new Set(targetData.map(i => i["Vendor Name"]).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
+
             vendors.forEach(v => {
                 const opt = document.createElement('option');
                 opt.value = v;
@@ -897,15 +919,19 @@
         }
 
         function getFilteredData() {
-            const searchKoli = document.getElementById('search-koli').value.trim().toLowerCase();
+            const searchKeyword = document.getElementById('search-koli').value.trim().toLowerCase();
             const filterVendor = document.getElementById('filter-vendor').value;
             const filterDate = document.getElementById('filter-date').value;
 
             return cargoData.filter(item => {
-                const matchKoli = !searchKoli || String(item["No. Koli"]).toLowerCase().includes(searchKoli);
+                const matchKoli = !searchKeyword || String(item["No. Koli"]).toLowerCase().includes(searchKeyword);
+                const matchMatDesc = !searchKeyword || String(item["Material Description"]).toLowerCase().includes(searchKeyword);
+                const matchSearch = matchKoli || matchMatDesc;
+
                 const matchVendor = !filterVendor || item["Vendor Name"] === filterVendor;
                 const matchDate = !filterDate || item["Document Date"] === filterDate;
-                return matchKoli && matchVendor && matchDate;
+                
+                return matchSearch && matchVendor && matchDate;
             });
         }
 
@@ -1227,7 +1253,13 @@
             if (excelInput) excelInput.addEventListener('change', handleFileUpload);
 
             const searchKoli = document.getElementById('search-koli');
-            if (searchKoli) searchKoli.addEventListener('input', renderTable);
+            if (searchKoli) {
+                searchKoli.addEventListener('input', () => {
+                    updateDateDropdown();
+                    updateVendorDropdown();
+                    renderTable();
+                });
+            }
 
             const filterDate = document.getElementById('filter-date');
             if (filterDate) {
@@ -1238,7 +1270,12 @@
             }
 
             const filterVendor = document.getElementById('filter-vendor');
-            if (filterVendor) filterVendor.addEventListener('change', renderTable);
+            if (filterVendor) {
+                filterVendor.addEventListener('change', () => {
+                    updateDateDropdown();
+                    renderTable();
+                });
+            }
 
             // Check existing draft session on page load
             checkExistingDraft();
