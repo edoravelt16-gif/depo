@@ -183,6 +183,18 @@
                     </div>
                 </div>
 
+                <!-- Pilihan Unit Armada saat Pemuatan -->
+                <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 space-y-1.5">
+                    <label class="block text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-truck text-indigo-600"></i> Pilih Unit Armada Aktif:
+                    </label>
+                    <select id="selected-unit" class="w-full px-3 py-2 text-xs border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-indigo-800">
+                        <option value="Unit 1">🚚 Unit 1 (Biru)</option>
+                        <option value="Unit 2">🚛 Unit 2 (Ungu)</option>
+                        <option value="Unit 3">🚚 Unit 3 (Oranye)</option>
+                    </select>
+                </div>
+
                 <!-- Scanner & Search Filters Card -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
                     <div class="flex justify-between items-center">
@@ -577,7 +589,7 @@
                 "Inbound Num.": String(inboundNum).trim(),
                 "Material Description": String(matDesc).trim(),
                 "No. Koli": noKoli,
-                "Status": String(status).trim() === "Termuat" ? "Termuat" : "Ready on Depo"
+                "Status": String(status).trim() !== "Ready on Depo" && String(status).trim() !== "" ? String(status).trim() : "Ready on Depo"
             };
         }
 
@@ -908,7 +920,7 @@
             let termuatCount = 0;
 
             cargoData.forEach(item => {
-                if (item.Status === 'Termuat') termuatCount++;
+                if (item.Status !== 'Ready on Depo') termuatCount++;
                 else readyCount++;
             });
 
@@ -929,11 +941,25 @@
             }
 
             data.forEach((item, index) => {
-                const isTermuat = item.Status === 'Termuat';
-                const rowClass = isTermuat ? 'bg-emerald-50/50 hover:bg-emerald-100/50' : 'hover:bg-slate-50';
-                const statusBadge = isTermuat 
-                    ? `<span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-check mr-1"></i>Termuat</span>`
-                    : `<span class="bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-warehouse mr-1"></i>Ready Depo</span>`;
+                const isReady = item.Status === 'Ready on Depo';
+                let statusBadge = '';
+                let rowClass = 'hover:bg-slate-50';
+
+                if (isReady) {
+                    statusBadge = `<span class="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-warehouse mr-1"></i>Ready Depo</span>`;
+                } else if (item.Status.includes('Unit 1')) {
+                    rowClass = 'bg-blue-50/60 hover:bg-blue-100/60';
+                    statusBadge = `<span class="bg-blue-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-truck mr-1"></i>${item.Status}</span>`;
+                } else if (item.Status.includes('Unit 2')) {
+                    rowClass = 'bg-purple-50/60 hover:bg-purple-100/60';
+                    statusBadge = `<span class="bg-purple-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-truck mr-1"></i>${item.Status}</span>`;
+                } else if (item.Status.includes('Unit 3')) {
+                    rowClass = 'bg-orange-50/60 hover:bg-orange-100/60';
+                    statusBadge = `<span class="bg-orange-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-truck mr-1"></i>${item.Status}</span>`;
+                } else {
+                    rowClass = 'bg-emerald-50/60 hover:bg-emerald-100/60';
+                    statusBadge = `<span class="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-check mr-1"></i>${item.Status}</span>`;
+                }
 
                 const tr = document.createElement('tr');
                 tr.className = `${rowClass} border-b border-slate-100 transition text-xs`;
@@ -1115,6 +1141,7 @@
 
         // Toggle Status Termuat <-> Ready on Depo (Berdasarkan Koli, Vendor, & Tanggal)
         function toggleStatus(noKoli, vendorName, docDate) {
+            const selectedUnit = document.getElementById('selected-unit') ? document.getElementById('selected-unit').value : 'Unit 1';
             const targets = cargoData.filter(item => 
                 String(item["No. Koli"]) === String(noKoli) && 
                 item["Vendor Name"] === vendorName && 
@@ -1122,8 +1149,8 @@
             );
 
             if (targets.length > 0) {
-                const currentStatus = targets[0].Status;
-                const newStatus = currentStatus === 'Termuat' ? 'Ready on Depo' : 'Termuat';
+                const isCurrentlyReady = targets[0].Status === 'Ready on Depo';
+                const newStatus = isCurrentlyReady ? `Termuat (${selectedUnit})` : 'Ready on Depo';
 
                 targets.forEach(item => {
                     item.Status = newStatus;
@@ -1131,21 +1158,22 @@
 
                 saveDataLocally(true);
                 renderTable();
-                showToast(`${targets.length} item No. Koli ${noKoli} diubah menjadi ${newStatus}`, newStatus === 'Termuat' ? 'success' : 'info');
+                showToast(`${targets.length} item No. Koli ${noKoli} diubah menjadi ${newStatus}`, newStatus !== 'Ready on Depo' ? 'success' : 'info');
             }
         }
 
         // Bulk status change untuk data hasil filter
         function markFilteredAsTermuat() {
+            const selectedUnit = document.getElementById('selected-unit') ? document.getElementById('selected-unit').value : 'Unit 1';
             const data = getFilteredData();
             if (data.length === 0) {
                 showToast("Tidak ada data terfilter untuk ditandai", "error");
                 return;
             }
-            data.forEach(item => item.Status = 'Termuat');
+            data.forEach(item => item.Status = `Termuat (${selectedUnit})`);
             saveDataLocally(true);
             renderTable();
-            showToast(`${data.length} item ditandai Termuat`, "success");
+            showToast(`${data.length} item ditandai Termuat (${selectedUnit})`, "success");
         }
 
         function markFilteredAsReady() {
@@ -1154,19 +1182,19 @@
                 showToast("Tidak ada data terfilter untuk ditandai", "error");
                 return;
             }
-            data.forEach(item => item.Status = 'Ready on Depo');
+            data.forEach(item => item.Status = "Ready on Depo");
             saveDataLocally(true);
             renderTable();
-            showToast(`${data.length} item di-set Ready Depo`, "info");
+            showToast(`${data.length} item ditandai Ready on Depo`, "info");
         }
 
-        // Scanner Barcode via Kamera HP
+        // Toggle Barcode Camera Scanner
         function toggleScanner() {
-            const container = document.getElementById('scanner-container');
-            if (!container) return;
+            const scannerContainer = document.getElementById('scanner-container');
+            if (!scannerContainer) return;
 
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
+            if (scannerContainer.classList.contains('hidden')) {
+                scannerContainer.classList.remove('hidden');
                 if (!html5QrcodeScanner) {
                     html5QrcodeScanner = new Html5Qrcode("reader");
                 }
@@ -1174,44 +1202,32 @@
                     { facingMode: "environment" },
                     { fps: 10, qrbox: { width: 250, height: 150 } },
                     (decodedText) => {
-                        const searchInput = document.getElementById('search-koli');
-                        if (searchInput) {
-                            searchInput.value = decodedText;
-                            renderTable();
-                            showToast(`Barcode terdeteksi: ${decodedText}`, "success");
-                        }
-                        toggleScanner();
+                        document.getElementById('search-koli').value = decodedText;
+                        renderTable();
+                        showToast(`Barcode terdeteksi: ${decodedText}`, "success");
                     },
                     (errorMessage) => {
-                        // Ignoring scan failures
+                        // ignore camera scan errors on frame
                     }
                 ).catch(err => {
-                    console.error("Gagal memulai kamera:", err);
-                    showToast("Kamera tidak dapat diakses", "error");
-                    container.classList.add('hidden');
+                    console.error("Gagal membuka kamera:", err);
+                    showToast("Gagal membuka kamera. Pastikan izin kamera aktif.", "error");
                 });
             } else {
+                scannerContainer.classList.add('hidden');
                 if (html5QrcodeScanner) {
-                    html5QrcodeScanner.stop().then(() => {
-                        container.classList.add('hidden');
-                    }).catch(() => {
-                        container.classList.add('hidden');
-                    });
-                } else {
-                    container.classList.add('hidden');
+                    html5QrcodeScanner.stop().catch(err => console.error(err));
                 }
             }
         }
 
-        // Event Listener & Initialization
+        // Event Listeners for Filters & Inputs
         document.addEventListener('DOMContentLoaded', () => {
-            checkExistingDraft();
+            const excelInput = document.getElementById('excel-file-input');
+            if (excelInput) excelInput.addEventListener('change', handleFileUpload);
 
-            const fileInput = document.getElementById('excel-file-input');
-            if (fileInput) fileInput.addEventListener('change', handleFileUpload);
-
-            const searchInput = document.getElementById('search-koli');
-            if (searchInput) searchInput.addEventListener('input', renderTable);
+            const searchKoli = document.getElementById('search-koli');
+            if (searchKoli) searchKoli.addEventListener('input', renderTable);
 
             const filterDate = document.getElementById('filter-date');
             if (filterDate) {
@@ -1224,12 +1240,8 @@
             const filterVendor = document.getElementById('filter-vendor');
             if (filterVendor) filterVendor.addEventListener('change', renderTable);
 
-            if (cargoData && cargoData.length > 0) {
-                updateDateDropdown();
-                updateVendorDropdown();
-                renderTable();
-                updateViewMode();
-            }
+            // Check existing draft session on page load
+            checkExistingDraft();
         });
     </script>
 </body>
