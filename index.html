@@ -265,9 +265,10 @@
                                 <tr class="bg-slate-100 text-slate-600 text-[11px] font-semibold uppercase border-b border-slate-200">
                                     <th class="px-3 py-2.5">No</th>
                                     <th class="px-3 py-2.5">Doc Date</th>
-                                    <th class="px-3 py-2.5">Vendor Name</th>
+                                    <th class="px-3 py-2.5 max-w-[150px] w-[150px]">Vendor Name</th>
                                     <th class="px-3 py-2.5">Plant</th>
                                     <th class="px-3 py-2.5">Inbound Num.</th>
+                                    <th class="px-3 py-2.5 max-w-[150px] w-[150px]">Material Description</th>
                                     <th class="px-3 py-2.5">No. Koli</th>
                                     <th class="px-3 py-2.5 text-right">Status Koli</th>
                                 </tr>
@@ -918,7 +919,7 @@
             if (data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center py-8 text-xs text-slate-400">
+                        <td colspan="8" class="text-center py-8 text-xs text-slate-400">
                             <i class="fa-solid fa-box-open text-2xl mb-2 block text-slate-300"></i>
                             Tidak ada data koli yang sesuai dengan filter
                         </td>
@@ -938,12 +939,13 @@
                 tr.className = `${rowClass} border-b border-slate-100 transition text-xs`;
                 tr.innerHTML = `
                     <td class="px-3 py-2.5 text-slate-400 font-mono">${index + 1}</td>
-                    <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Document Date"]}</td>
-                    <td class="px-3 py-2.5 font-semibold text-slate-800">${item["Vendor Name"]}</td>
-                    <td class="px-3 py-2.5 text-slate-600">${item["Plant"]}</td>
+                    <td class="px-3 py-2.5 text-slate-600 font-mono whitespace-nowrap">${item["Document Date"]}</td>
+                    <td class="px-3 py-2.5 font-semibold text-slate-800 max-w-[150px] w-[150px] truncate" title="${item["Vendor Name"]}">${item["Vendor Name"]}</td>
+                    <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Plant"]}</td>
                     <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Inbound Num."]}</td>
-                    <td class="px-3 py-2.5 font-bold font-mono text-indigo-700">${item["No. Koli"]}</td>
-                    <td class="px-3 py-2.5 text-right">
+                    <td class="px-3 py-2.5 text-slate-600 max-w-[150px] w-[150px] truncate" title="${item["Material Description"]}">${item["Material Description"]}</td>
+                    <td class="px-3 py-2.5 font-bold font-mono text-indigo-700 whitespace-nowrap">${item["No. Koli"]}</td>
+                    <td class="px-3 py-2.5 text-right whitespace-nowrap">
                         <button onclick="toggleStatus('${item["No. Koli"]}', '${item["Vendor Name"]}', '${item["Document Date"]}')" class="focus:outline-none transition transform active:scale-95">
                             ${statusBadge}
                         </button>
