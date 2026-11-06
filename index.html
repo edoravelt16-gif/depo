@@ -162,33 +162,24 @@
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div class="grid grid-cols-2 gap-3">
                         <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-                            <span class="block text-[10px] font-semibold text-amber-700 uppercase">Ready on Depo</span>
+                            <span class="block text-[10px] font-semibold text-amber-700 uppercase">READY ON DEPO</span>
                             <span id="stat-ready-count" class="text-2xl font-bold text-amber-800">0</span>
                         </div>
                         <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                            <span class="block text-[10px] font-semibold text-emerald-700 uppercase">Termuat</span>
+                            <span class="block text-[10px] font-semibold text-emerald-700 uppercase">TERMUAT</span>
                             <span id="stat-termuat-count" class="text-2xl font-bold text-emerald-800">0</span>
                         </div>
                     </div>
-
-                    <div class="flex gap-2 text-xs">
-                        <button onclick="markFilteredAsTermuat()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition">
-                            <i class="fa-solid fa-circle-check"></i> Tandai Termuat
-                        </button>
-                        <button onclick="markFilteredAsReady()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition">
-                            <i class="fa-solid fa-warehouse"></i> Set Ready Depo
-                        </button>
-                    </div>
                 </div>
 
-                <!-- Pilihan Unit Armada saat Pemuatan -->
-                <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-3 space-y-1.5">
+                <!-- Card Pilih Unit Armada Aktif -->
+                <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3.5 space-y-2">
                     <label class="block text-xs font-bold text-indigo-900 flex items-center gap-1.5">
-                        <i class="fa-solid fa-truck text-indigo-600"></i> Pilih Unit Armada Aktif:
+                        <i class="fa-solid fa-truck-front text-indigo-600"></i> Pilih Unit Armada Aktif:
                     </label>
-                    <select id="selected-unit" class="w-full px-3 py-2 text-xs border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-indigo-800">
+                    <select id="active-unit-select" class="w-full px-3 py-2 text-xs font-bold border-2 border-indigo-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white text-indigo-900 shadow-sm cursor-pointer">
                         <option value="Unit 1">🚚 Unit 1 (Biru)</option>
                         <option value="Unit 2">🚛 Unit 2 (Ungu)</option>
                         <option value="Unit 3">🚚 Unit 3 (Oranye)</option>
@@ -201,9 +192,14 @@
                         <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                             <i class="fa-solid fa-filter text-indigo-500"></i> Cari & Filter Koli
                         </h3>
-                        <button onclick="toggleScanner()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1">
-                            <i class="fa-solid fa-barcode"></i> Scan Barcode
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="resetFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-300 text-xs px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1">
+                                <i class="fa-solid fa-arrows-rotate text-slate-500"></i> Reset Filter
+                            </button>
+                            <button onclick="toggleScanner()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1">
+                                <i class="fa-solid fa-barcode"></i> Scan Barcode
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Camera Barcode Scanner Viewport -->
@@ -269,6 +265,25 @@
                                 <i class="fa-brands fa-google-drive text-amber-300 text-lg"></i> Upload Report to GDrive
                             </button>
                         </div>
+                    </div>
+
+                    <!-- TAB SHEET NAVIGATION (Semua, Depo, Unit 1, Unit 2, Unit 3) -->
+                    <div class="bg-slate-100/80 border-b border-slate-200 px-3 pt-2 flex items-center gap-1.5 overflow-x-auto">
+                        <button onclick="switchTab('all')" id="tab-all" class="tab-btn active px-3.5 py-2 text-xs font-bold rounded-t-lg bg-white text-indigo-600 border-t-2 border-indigo-600 shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+                    <!-- TAB SHEET NAVIGATION (Depo, Unit 1, Unit 2, Unit 3) -->
+                    <div class="bg-slate-100/80 border-b border-slate-200 px-3 pt-2 flex items-center gap-1.5 overflow-x-auto">
+                        <button onclick="switchTab('depo')" id="tab-depo" class="tab-btn active px-3.5 py-2 text-xs font-bold rounded-t-lg bg-white text-indigo-600 border-t-2 border-indigo-600 shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-warehouse text-amber-600"></i> Ready Depo (<span id="tab-count-depo">0</span>)
+                        </button>
+                        <button onclick="switchTab('unit1')" id="tab-unit1" class="tab-btn px-3.5 py-2 text-xs font-semibold rounded-t-lg bg-slate-200/70 text-slate-600 hover:bg-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-truck text-blue-600"></i> Sheet Unit 1 (<span id="tab-count-unit1">0</span>)
+                        </button>
+                        <button onclick="switchTab('unit2')" id="tab-unit2" class="tab-btn px-3.5 py-2 text-xs font-semibold rounded-t-lg bg-slate-200/70 text-slate-600 hover:bg-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-truck text-purple-600"></i> Sheet Unit 2 (<span id="tab-count-unit2">0</span>)
+                        </button>
+                        <button onclick="switchTab('unit3')" id="tab-unit3" class="tab-btn px-3.5 py-2 text-xs font-semibold rounded-t-lg bg-slate-200/70 text-slate-600 hover:bg-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-truck text-orange-600"></i> Sheet Unit 3 (<span id="tab-count-unit3">0</span>)
+                        </button>
                     </div>
 
                     <div class="flex-grow overflow-x-auto">
@@ -372,7 +387,79 @@
         const GDRIVE_FOLDER_ID = "165ImQNxt34-15gIrlmNQhfe4UMoidkgc";
         const GDRIVE_FOLDER_URL = `https://drive.google.com/drive/folders/${GDRIVE_FOLDER_ID}?usp=drive_link`;
         let cargoData = JSON.parse(localStorage.getItem('cargo_expedisi_data')) || [];
+        let currentTab = 'depo'; // Active sheet tab default set ke 'depo'
         let html5QrcodeScanner = null;
+
+        // Tandai item hasil filter menjadi Termuat sesuai Unit Armada yang Aktif
+        function markFilteredAsTermuat() {
+            const filtered = getFilteredData();
+            if (filtered.length === 0) {
+                showToast("Tidak ada item yang sesuai filter untuk ditandai", "error");
+                return;
+            }
+
+            const activeUnitSelect = document.getElementById('active-unit-select');
+            const activeUnit = activeUnitSelect ? activeUnitSelect.value : 'Unit 1';
+            const targetStatus = `Termuat (${activeUnit})`;
+
+            filtered.forEach(item => {
+                item.Status = targetStatus;
+            });
+
+            saveDataLocally(true);
+            renderTable();
+            showToast(`${filtered.length} item berhasil ditandai Termuat ke ${activeUnit}!`, "success");
+        }
+
+        // Tandai item hasil filter menjadi Ready on Depo
+        function markFilteredAsReady() {
+            const filtered = getFilteredData();
+            if (filtered.length === 0) {
+                showToast("Tidak ada item yang sesuai filter untuk di-reset", "error");
+                return;
+            }
+
+            filtered.forEach(item => {
+                item.Status = "Ready on Depo";
+            });
+
+            saveDataLocally(true);
+            renderTable();
+            showToast(`${filtered.length} item berhasil diset kembali ke Ready Depo!`, "info");
+        }
+
+        // Switch Sheet Tab
+        function switchTab(tabName) {
+            currentTab = tabName;
+            const tabs = ['depo', 'unit1', 'unit2', 'unit3'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (!btn) return;
+                if (t === tabName) {
+                    btn.className = "tab-btn active px-3.5 py-2 text-xs font-bold rounded-t-lg bg-white text-indigo-600 border-t-2 border-indigo-600 shadow-sm flex items-center gap-1.5 whitespace-nowrap";
+                } else {
+                    btn.className = "tab-btn px-3.5 py-2 text-xs font-semibold rounded-t-lg bg-slate-200/70 text-slate-600 hover:bg-slate-200 flex items-center gap-1.5 whitespace-nowrap";
+                }
+            });
+            renderTable();
+        }
+
+        // Update counts on tabs
+        function updateTabCounters() {
+            const countDepo = cargoData.filter(i => i.Status === 'Ready on Depo').length;
+            const countUnit1 = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 1')).length;
+            const countUnit2 = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 2')).length;
+            const countUnit3 = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 3')).length;
+
+            if (document.getElementById('tab-count-depo')) document.getElementById('tab-count-depo').innerText = countDepo;
+            if (document.getElementById('tab-count-unit1')) document.getElementById('tab-count-unit1').innerText = countUnit1;
+            if (document.getElementById('tab-count-unit2')) document.getElementById('tab-count-unit2').innerText = countUnit2;
+            if (document.getElementById('tab-count-unit3')) document.getElementById('tab-count-unit3').innerText = countUnit3;
+        }
+
+        function itemMatchesUnit(status, unitName) {
+            return String(status).includes(unitName);
+        }
 
         // Save progress immediately into Android/Browser local memory
         function saveDataLocally(silent = true) {
@@ -382,6 +469,7 @@
                 const badge = document.getElementById('data-count-badge');
                 if (badge) badge.innerText = `${cargoData.length} Item Tersimpan`;
                 updateDraftBanner();
+                updateTabCounters();
                 if (!silent) showToast("Perubahan otomatis tersimpan di memori HP/Browser", "success");
             } catch (e) {
                 console.error(e);
@@ -739,9 +827,12 @@
                 }
             }
 
-            const status = row["STATUS"] || row["Status"] || row["Delivery Status"] || row["Keterangan"] || "Ready on Depo";
+            const rawStatus = String(row["STATUS"] || row["Status"] || row["Delivery Status"] || row["Keterangan"] || "").trim();
+            // Hanya set status Termuat jika file sumber secara eksplisit menyatakan 'termuat'
+            const initialStatus = rawStatus.toLowerCase().includes('termuat') ? rawStatus : "Ready on Depo";
 
             return {
+                _id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                 _original: row,
                 "Document Date": String(docDate).trim(),
                 "Vendor Name": String(vendorName).trim(),
@@ -749,7 +840,7 @@
                 "Inbound Num.": String(inboundNum).trim(),
                 "Material Description": String(matDesc).trim(),
                 "No. Koli": noKoli,
-                "Status": String(status).trim() === "Termuat" ? "Termuat" : "Ready on Depo"
+                "Status": initialStatus
             };
         }
 
@@ -931,7 +1022,19 @@
                 const matchVendor = !filterVendor || item["Vendor Name"] === filterVendor;
                 const matchDate = !filterDate || item["Document Date"] === filterDate;
                 
-                return matchSearch && matchVendor && matchDate;
+                let matchTab = true;
+                if (currentTab === 'depo') {
+                    // Pada tab Ready Depo, hanya tampilkan barang yang BELUM dimuat
+                    matchTab = item.Status === 'Ready on Depo';
+                } else if (currentTab === 'unit1') {
+                    matchTab = itemMatchesUnit(item.Status, 'Unit 1');
+                } else if (currentTab === 'unit2') {
+                    matchTab = itemMatchesUnit(item.Status, 'Unit 2');
+                } else if (currentTab === 'unit3') {
+                    matchTab = itemMatchesUnit(item.Status, 'Unit 3');
+                }
+
+                return matchSearch && matchVendor && matchDate && matchTab;
             });
         }
 
@@ -940,14 +1043,18 @@
             if (!tbody) return;
             tbody.innerHTML = '';
 
+            updateTabCounters();
             const data = getFilteredData();
 
             let readyCount = 0;
             let termuatCount = 0;
 
             cargoData.forEach(item => {
-                if (item.Status !== 'Ready on Depo') termuatCount++;
-                else readyCount++;
+                if (item.Status && item.Status.toLowerCase().includes('termuat')) {
+                    termuatCount++;
+                } else {
+                    readyCount++;
+                }
             });
 
             document.getElementById('stat-ready-count').innerText = readyCount;
@@ -959,7 +1066,7 @@
                     <tr>
                         <td colspan="8" class="text-center py-8 text-xs text-slate-400">
                             <i class="fa-solid fa-box-open text-2xl mb-2 block text-slate-300"></i>
-                            Tidak ada data koli yang sesuai dengan filter
+                            Tidak ada data koli pada sheet ini
                         </td>
                     </tr>
                 `;
@@ -968,23 +1075,22 @@
 
             data.forEach((item, index) => {
                 const isReady = item.Status === 'Ready on Depo';
-                let statusBadge = '';
                 let rowClass = 'hover:bg-slate-50';
+                let statusBtnClass = 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300';
+                let statusText = '🏬 Ready Depo';
 
-                if (isReady) {
-                    statusBadge = `<span class="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-full"><i class="fa-solid fa-warehouse mr-1"></i>Ready Depo</span>`;
-                } else if (item.Status.includes('Unit 1')) {
+                if (item.Status.includes('Unit 1')) {
                     rowClass = 'bg-blue-50/60 hover:bg-blue-100/60';
-                    statusBadge = `<span class="bg-blue-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-truck mr-1"></i>${item.Status}</span>`;
+                    statusBtnClass = 'bg-blue-600 hover:bg-blue-700 text-white border-blue-700 shadow-sm';
+                    statusText = '🚛 Termuat (Unit 1)';
                 } else if (item.Status.includes('Unit 2')) {
                     rowClass = 'bg-purple-50/60 hover:bg-purple-100/60';
-                    statusBadge = `<span class="bg-purple-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-truck mr-1"></i>${item.Status}</span>`;
+                    statusBtnClass = 'bg-purple-600 hover:bg-purple-700 text-white border-purple-700 shadow-sm';
+                    statusText = '🚚 Termuat (Unit 2)';
                 } else if (item.Status.includes('Unit 3')) {
                     rowClass = 'bg-orange-50/60 hover:bg-orange-100/60';
-                    statusBadge = `<span class="bg-orange-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-truck mr-1"></i>${item.Status}</span>`;
-                } else {
-                    rowClass = 'bg-emerald-50/60 hover:bg-emerald-100/60';
-                    statusBadge = `<span class="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm"><i class="fa-solid fa-check mr-1"></i>${item.Status}</span>`;
+                    statusBtnClass = 'bg-orange-600 hover:bg-orange-700 text-white border-orange-700 shadow-sm';
+                    statusText = '🚛 Termuat (Unit 3)';
                 }
 
                 const tr = document.createElement('tr');
@@ -996,10 +1102,10 @@
                     <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Plant"]}</td>
                     <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Inbound Num."]}</td>
                     <td class="px-3 py-2.5 text-slate-600 max-w-[150px] w-[150px] truncate" title="${item["Material Description"]}">${item["Material Description"]}</td>
-                    <td class="px-3 py-2.5 font-bold font-mono text-indigo-700 whitespace-nowrap">${item["No. Koli"]}</td>
+                    <td class="px-3 py-2.5 font-bold font-mono text-indigo-700 whitespace-nowrap">${item["No. Koli"] || '-'}</td>
                     <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                        <button onclick="toggleStatus('${item["No. Koli"]}', '${item["Vendor Name"]}', '${item["Document Date"]}')" class="focus:outline-none transition transform active:scale-95">
-                            ${statusBadge}
+                        <button onclick="toggleItemStatus('${item._id}')" class="text-[11px] font-bold px-3 py-1.5 rounded-lg border transition ${statusBtnClass}">
+                            ${statusText}
                         </button>
                     </td>
                 `;
@@ -1007,24 +1113,147 @@
             });
         }
 
-        function resetData() {
-            if (confirm("Apakah Anda yakin ingin mengosongkan data dan memuat sesi baru?")) {
-                cargoData = [];
-                localStorage.removeItem('cargo_expedisi_data');
-                localStorage.removeItem('cargo_expedisi_last_saved');
-                updateDraftBanner();
+        // Action toggle status koli (Ready Depo <-> Termuat pada Unit Aktif berdasarkan ID Unik)
+        function toggleItemStatus(itemId) {
+            const activeUnitSelect = document.getElementById('active-unit-select');
+            const activeUnit = activeUnitSelect ? activeUnitSelect.value : 'Unit 1';
+            const targetUnitStatus = `Termuat (${activeUnit})`;
+
+            // Cari item spesifik berdasarkan _id uniknya
+            const item = cargoData.find(i => String(i._id) === String(itemId));
+
+            if (item) {
+                // Periksa apakah item saat ini sudah Termuat
+                const isAlreadyLoaded = item.Status && item.Status.toLowerCase().includes('termuat');
+                const nextStatus = isAlreadyLoaded ? 'Ready on Depo' : targetUnitStatus;
+
+                const noKoliVal = String(item["No. Koli"] || "").trim();
+                const isNoKoliEmptyOrDash = (noKoliVal === "" || noKoliVal === "-");
+
+                if (!isNoKoliEmptyOrDash) {
+                    // 1. BULK UPDATE: Jika No. Koli valid (terisi), ubah semua item sejenis (No. Koli, Vendor Name, Document Date sama)
+                    let matchedCount = 0;
+                    cargoData.forEach(target => {
+                        const targetKoli = String(target["No. Koli"] || "").trim();
+                        if (
+                            targetKoli === noKoliVal &&
+                            String(target["Vendor Name"] || "").trim() === String(item["Vendor Name"] || "").trim() &&
+                            String(target["Document Date"] || "").trim() === String(item["Document Date"] || "").trim()
+                        ) {
+                            target.Status = nextStatus;
+                            matchedCount++;
+                        }
+                    });
+
+                    if (isAlreadyLoaded) {
+                        showToast(`${matchedCount} item Koli (${noKoliVal}) dikembalikan ke Ready Depo`, 'info');
+                    } else {
+                        showToast(`${matchedCount} item Koli (${noKoliVal}) berhasil dimuat ke ${activeUnit}`, 'success');
+                    }
+                } else {
+                    // 2. PENANDAAN MANDIRI (PER-ITEM): Jika No. Koli kosong ("") atau "-", hanya ubah baris unik ini saja
+                    item.Status = nextStatus;
+
+                    if (isAlreadyLoaded) {
+                        showToast(`Item dikembalikan ke Ready Depo`, 'info');
+                    } else {
+                        showToast(`Item berhasil dimuat ke ${activeUnit}`, 'success');
+                    }
+                }
+
+                saveDataLocally(true);
                 renderTable();
-                updateDateDropdown();
-                updateVendorDropdown();
-                updateViewMode();
-                showToast("Sesi berhasil di-reset", "info");
+            } else {
+                showToast('Gagal menemukan data item yang dipilih', 'error');
             }
         }
 
-        // Modal Handler Upload to Google Drive (Baru Ditambahkan)
-        function openUploadGDriveModal() {
+        function generateMultiSheetWorkbook() {
+            const wb = XLSX.utils.book_new();
+
+            // Menggunakan objek data asli (_original) agar SELURUH KOLOM dari spreadsheet awal tetap utuh
+            const prepareDataWithOriginalColumns = (items) => items.map((item, idx) => {
+                // Duplikasi objek asli agar tidak merusak data memori
+                const rowData = Object.assign({}, item._original || {});
+                
+                // Tambahkan/Update Nomor Urut jika belum ada
+                if (!rowData["NO"] && !rowData["No"] && !rowData["No."]) {
+                    rowData["NO"] = idx + 1;
+                }
+
+                // Cari letak nama kolom Status yang digunakan di file awal, atau buatkan 'STATUS KOLI'
+                let statusKey = Object.keys(rowData).find(k => k.trim().toLowerCase() === 'status' || k.trim().toLowerCase() === 'status koli');
+                if (!statusKey) statusKey = "STATUS KOLI";
+
+                // Set status termuat / ready depo terbaru
+                rowData[statusKey] = item.Status;
+
+                // FORMAT KHUSUS KOLOM DOCUMENT DATE
+                // Cari nama kunci kolom yang berhubungan dengan Document Date
+                let docDateKey = Object.keys(rowData).find(k => {
+                    const keyLower = k.trim().toLowerCase();
+                    return keyLower === 'document date' || keyLower === 'doc date' || keyLower === 'tgl dokumen' || keyLower === 'tanggal';
+                });
+
+                if (docDateKey) {
+                    const rawDateVal = rowData[docDateKey] || item["Document Date"];
+                    const formattedDateStr = formatExcelDate(rawDateVal);
+                    
+                    // Jika berisi string tanggal valid YYYY-MM-DD, ubah menjadi Objek Date sejati untuk Excel
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(formattedDateStr)) {
+                        const parts = formattedDateStr.split('-');
+                        // Parameter Date(Year, MonthIndex 0-11, Day)
+                        rowData[docDateKey] = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                    } else {
+                        rowData[docDateKey] = formattedDateStr;
+                    }
+                }
+
+                return rowData;
+            });
+
+            // 1. Sheet Ready Depo (Belum Termuat)
+            const depoData = cargoData.filter(i => i.Status === 'Ready on Depo');
+            const wsDepo = XLSX.utils.json_to_sheet(prepareDataWithOriginalColumns(depoData), { cellDates: true });
+            XLSX.utils.book_append_sheet(wb, wsDepo, "Ready Depo");
+
+            // 2. Sheet Unit 1 (Termuat Unit 1)
+            const unit1Data = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 1'));
+            const wsUnit1 = XLSX.utils.json_to_sheet(prepareDataWithOriginalColumns(unit1Data), { cellDates: true });
+            XLSX.utils.book_append_sheet(wb, wsUnit1, "Unit 1");
+
+            // 3. Sheet Unit 2 (Termuat Unit 2)
+            const unit2Data = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 2'));
+            const wsUnit2 = XLSX.utils.json_to_sheet(prepareDataWithOriginalColumns(unit2Data), { cellDates: true });
+            XLSX.utils.book_append_sheet(wb, wsUnit2, "Unit 2");
+
+            // 4. Sheet Unit 3 (Termuat Unit 3)
+            const unit3Data = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 3'));
+            const wsUnit3 = XLSX.utils.json_to_sheet(prepareDataWithOriginalColumns(unit3Data), { cellDates: true });
+            XLSX.utils.book_append_sheet(wb, wsUnit3, "Unit 3");
+
+            return wb;
+        }
+
+        function exportExcel() {
             if (cargoData.length === 0) {
-                showToast("Tidak ada data untuk di-upload", "error");
+                showToast("Tidak ada data untuk diunduh", "error");
+                return;
+            }
+            try {
+                const wb = generateMultiSheetWorkbook();
+                const now = new Date().toISOString().slice(0, 10);
+                XLSX.writeFile(wb, `CHECKLIST_LOADING_BARANG_${now}.xlsx`);
+                showToast("Berhasil mengunduh Laporan Excel Multi-Sheet!", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal mengunduh file Excel", "error");
+            }
+        }
+
+        function uploadViaAPI() {
+            if (cargoData.length === 0) {
+                showToast("Tidak ada data untuk diunggah", "error");
                 return;
             }
             const modal = document.getElementById('gdrive-upload-modal');
@@ -1038,183 +1267,44 @@
 
         function uploadViaDirectFolder() {
             exportExcel();
-            setTimeout(() => {
-                openGDriveLink();
-                closeUploadGDriveModal();
-                showToast("File Excel terunduh! Silakan drag/taruh file ke folder Google Drive yang baru terbuka.", "success");
-            }, 500);
+            window.open(GDRIVE_FOLDER_URL, '_blank');
+            closeUploadGDriveModal();
         }
 
-                async function uploadViaAPI() {
-                    console.log("[DEBUG] Tombol upload diklik. Memulai proses uploadViaAPI...");
-                    
-                    if (cargoData.length === 0) {
-                        console.warn("[DEBUG] Data kosong, proses dihentikan.");
-                        showToast("Tidak ada data untuk di-upload", "error");
-                        return;
-                    }
-                
-                    showToast("Mempersiapkan data Excel...", "info");
-                    console.log(`[DEBUG] Memproses ${cargoData.length} baris data...`);
-                
-                    try {
-                        const exportRows = cargoData.map(item => {
-                            let rowObj = item._original && typeof item._original === 'object' ? { ...item._original } : {};
-                            rowObj["Document Date"] = item["Document Date"];
-                            rowObj["Vendor Name"] = item["Vendor Name"];
-                            rowObj["Plant"] = item["Plant"];
-                            rowObj["Inbound Num."] = item["Inbound Num."];
-                            rowObj["Material Description"] = item["Material Description"];
-                            rowObj["No. Koli"] = item["No. Koli"];
-                            rowObj["STATUS"] = item.Status;
-                            return rowObj;
-                        });
-                
-                        const worksheet = XLSX.utils.json_to_sheet(exportRows);
-                        const workbook = XLSX.utils.book_new();
-                        XLSX.utils.book_append_sheet(workbook, worksheet, "Report Expedisi");
-                        console.log("[DEBUG] File Excel berhasil di-generate di memori.");
-                
-                        const excelBase64 = XLSX.write(workbook, { bookType: 'xlsx', type: 'base64' });
-                        // Format nama file dengan tanggal dan jam-menit-detik agar tidak bentrok di hari yang sama
-                        const now = new Date();
-                        const dateStr = now.toISOString().slice(0, 10);
-                        const timeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0') + String(now.getSeconds()).padStart(2, '0');
-                        const fileName = `Report_Loading_Expedisi_${dateStr}_${timeStr}.xlsx`;
-                
-                        const webAppUrl = "https://script.google.com/macros/s/AKfycbxRmziQ_Er-PsueIN5_DBeUI3K8dM2IYnMjGRW5inAqgNePqyGtiq2T72TPJ6ozzV1iZw/exec";
-                        console.log("[DEBUG] Target Web App URL:", webAppUrl);
-                
-                        showToast("Mengunggah report ke folder GDrive...", "info");
-                        console.log("[DEBUG] Mengirim request POST ke Google Apps Script...");
-                
-                        const payload = JSON.stringify({
-                            filename: fileName,
-                            content: excelBase64
-                        });
-
-                        try {
-                            const response = await fetch(webAppUrl, {
-                                method: 'POST',
-                                mode: 'cors',
-                                headers: {
-                                    "Content-Type": "text/plain;charset=utf-8", 
-                                },
-                                body: payload
-                            });
-
-                            const result = await response.json();
-                            if (result.status === "success") {
-                                if (typeof closeUploadGDriveModal === 'function') closeUploadGDriveModal();
-                                showToast("Upload Berhasil! Report langsung masuk ke folder tim.", "success");
-                                return;
-                            }
-                        } catch (corsErr) {
-                            console.warn("[DEBUG] CORS standard fetch gagal, mengupayakan pengiriman via mode no-cors...", corsErr);
-                            
-                            // Fallback pengiriman menggunakan no-cors agar payload tetap sampai ke Google Apps Script Web App
-                            await fetch(webAppUrl, {
-                                method: 'POST',
-                                mode: 'no-cors',
-                                headers: {
-                                    "Content-Type": "text/plain;charset=utf-8",
-                                },
-                                body: payload
-                            });
-
-                            if (typeof closeUploadGDriveModal === 'function') closeUploadGDriveModal();
-                            showToast("Upload Terkirim ke Google Drive!", "success");
-                            return;
-                        }
-                    } catch (error) {
-                        console.error("[DEBUG] Terjadi error kritis pada fungsi upload:", error);
-                        showToast("Gagal terhubung ke GDrive Web App. Mengunduh file Excel lokal...", "error");
-                        exportExcel();
-                    }
-                }
-
-        function exportExcel() {
-            if (cargoData.length === 0) {
-                showToast("Tidak ada data untuk diekspor", "error");
-                return;
-            }
-
-            const exportRows = cargoData.map(item => {
-                let rowObj = item._original && typeof item._original === 'object' ? { ...item._original } : {};
-                rowObj["Document Date"] = item["Document Date"];
-                rowObj["Vendor Name"] = item["Vendor Name"];
-                rowObj["Plant"] = item["Plant"];
-                rowObj["Inbound Num."] = item["Inbound Num."];
-                rowObj["Material Description"] = item["Material Description"];
-                rowObj["No. Koli"] = item["No. Koli"];
-                rowObj["STATUS"] = item.Status;
-                return rowObj;
-            });
-
-            const worksheet = XLSX.utils.json_to_sheet(exportRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Report Expedisi");
-
-            // Format nama file dengan tanggal dan jam-menit-detik
-            const now = new Date();
-            const dateStr = now.toISOString().slice(0, 10);
-            const timeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0') + String(now.getSeconds()).padStart(2, '0');
-            const fileName = `Report_Loading_Expedisi_${dateStr}_${timeStr}.xlsx`;
-
-            XLSX.writeFile(workbook, fileName);
-            showToast("Laporan Excel berhasil diunduh!", "success");
+        function openDriveFilePicker() {
+            const modal = document.getElementById('gdrive-modal');
+            if (modal) modal.classList.remove('hidden');
         }
 
-        // Toggle Status Termuat <-> Ready on Depo (Berdasarkan Koli, Vendor, & Tanggal)
-        function toggleStatus(noKoli, vendorName, docDate) {
-            const selectedUnit = document.getElementById('selected-unit') ? document.getElementById('selected-unit').value : 'Unit 1';
-            const targets = cargoData.filter(item => 
-                String(item["No. Koli"]) === String(noKoli) && 
-                item["Vendor Name"] === vendorName && 
-                item["Document Date"] === docDate
-            );
+        function closeDriveModal() {
+            const modal = document.getElementById('gdrive-modal');
+            if (modal) modal.classList.add('hidden');
+        }
 
-            if (targets.length > 0) {
-                const isCurrentlyReady = targets[0].Status === 'Ready on Depo';
-                const newStatus = isCurrentlyReady ? `Termuat (${selectedUnit})` : 'Ready on Depo';
+        function resetFilters() {
+            document.getElementById('search-koli').value = '';
+            document.getElementById('filter-date').value = '';
+            document.getElementById('filter-vendor').value = '';
+            updateDateDropdown();
+            updateVendorDropdown();
+            renderTable();
+            showToast("Filter berhasil direset", "info");
+        }
 
-                targets.forEach(item => {
-                    item.Status = newStatus;
-                });
-
-                saveDataLocally(true);
+        function resetData() {
+            if (confirm("Apakah Anda yakin ingin mengosongkan data pengecekan saat ini?")) {
+                cargoData = [];
+                localStorage.removeItem('cargo_expedisi_data');
+                localStorage.removeItem('cargo_expedisi_last_saved');
+                updateDraftBanner();
                 renderTable();
-                showToast(`${targets.length} item No. Koli ${noKoli} diubah menjadi ${newStatus}`, newStatus !== 'Ready on Depo' ? 'success' : 'info');
+                updateDateDropdown();
+                updateVendorDropdown();
+                updateViewMode();
+                showToast("Data berhasil dibersihkan.", "info");
             }
         }
 
-        // Bulk status change untuk data hasil filter
-        function markFilteredAsTermuat() {
-            const selectedUnit = document.getElementById('selected-unit') ? document.getElementById('selected-unit').value : 'Unit 1';
-            const data = getFilteredData();
-            if (data.length === 0) {
-                showToast("Tidak ada data terfilter untuk ditandai", "error");
-                return;
-            }
-            data.forEach(item => item.Status = `Termuat (${selectedUnit})`);
-            saveDataLocally(true);
-            renderTable();
-            showToast(`${data.length} item ditandai Termuat (${selectedUnit})`, "success");
-        }
-
-        function markFilteredAsReady() {
-            const data = getFilteredData();
-            if (data.length === 0) {
-                showToast("Tidak ada data terfilter untuk ditandai", "error");
-                return;
-            }
-            data.forEach(item => item.Status = "Ready on Depo");
-            saveDataLocally(true);
-            renderTable();
-            showToast(`${data.length} item ditandai Ready on Depo`, "info");
-        }
-
-        // Toggle Barcode Camera Scanner
         function toggleScanner() {
             const scannerContainer = document.getElementById('scanner-container');
             if (!scannerContainer) return;
@@ -1222,39 +1312,32 @@
             if (scannerContainer.classList.contains('hidden')) {
                 scannerContainer.classList.remove('hidden');
                 if (!html5QrcodeScanner) {
-                    html5QrcodeScanner = new Html5Qrcode("reader");
-                }
-                html5QrcodeScanner.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 150 } },
-                    (decodedText) => {
+                    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } });
+                    html5QrcodeScanner.render((decodedText) => {
                         document.getElementById('search-koli').value = decodedText;
                         renderTable();
                         showToast(`Barcode terdeteksi: ${decodedText}`, "success");
-                    },
-                    (errorMessage) => {
-                        // ignore camera scan errors on frame
-                    }
-                ).catch(err => {
-                    console.error("Gagal membuka kamera:", err);
-                    showToast("Gagal membuka kamera. Pastikan izin kamera aktif.", "error");
-                });
+                    }, (errorMessage) => {
+                        // Scan errors are ignored silently
+                    });
+                }
             } else {
                 scannerContainer.classList.add('hidden');
                 if (html5QrcodeScanner) {
-                    html5QrcodeScanner.stop().catch(err => console.error(err));
+                    html5QrcodeScanner.clear().catch(error => console.error(error));
+                    html5QrcodeScanner = null;
                 }
             }
         }
 
-        // Event Listeners for Filters & Inputs
-        document.addEventListener('DOMContentLoaded', () => {
-            const excelInput = document.getElementById('excel-file-input');
-            if (excelInput) excelInput.addEventListener('change', handleFileUpload);
+        // Event listeners initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('excel-file-input');
+            if (fileInput) fileInput.addEventListener('change', handleFileUpload);
 
-            const searchKoli = document.getElementById('search-koli');
-            if (searchKoli) {
-                searchKoli.addEventListener('input', () => {
+            const searchInput = document.getElementById('search-koli');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
                     updateDateDropdown();
                     updateVendorDropdown();
                     renderTable();
@@ -1277,8 +1360,16 @@
                 });
             }
 
-            // Check existing draft session on page load
+            const btnSync = document.getElementById('btn-sync-gdrive');
+            if (btnSync) btnSync.addEventListener('click', openGDriveLink);
+
             checkExistingDraft();
+            if (cargoData && cargoData.length > 0) {
+                updateDateDropdown();
+                updateVendorDropdown();
+                renderTable();
+                updateViewMode();
+            }
         });
     </script>
 </body>
