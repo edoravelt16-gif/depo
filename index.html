@@ -104,7 +104,7 @@
                 </label>
                 <div class="flex gap-2">
                     <input type="text" id="gspreadsheet-url" placeholder="https://docs.google.com/spreadsheets/d/..." class="flex-1 px-3 py-2 text-xs border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white" />
-                    <button onclick="loadFromSpreadsheetLink()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shrink-0 shadow-sm">
+                    <button onclick="loadFromSpreadsheetLink(false)" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shrink-0 shadow-sm">
                         <i class="fa-solid fa-cloud-arrow-down"></i> Muat Data
                     </button>
                 </div>
@@ -137,10 +137,17 @@
             
             <!-- Tombol Kembali ke Halaman Awal (Menu Back) -->
             <div class="lg:col-span-12 flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-slate-200">
-                <button onclick="showImportSection()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center gap-2 transition">
-                    <i class="fa-solid fa-arrow-left text-slate-500"></i>
-                    <span>Kembali ke Halaman Awal (Pilih File)</span>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="showImportSection()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center gap-2 transition">
+                        <i class="fa-solid fa-arrow-left text-slate-500"></i>
+                        <span>Kembali ke Halaman Awal</span>
+                    </button>
+                    <!-- TOMBOL SYNC SMART REFRESH DATA SPREADSHEET -->
+                    <button onclick="loadFromSpreadsheetLink(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center gap-2 transition shadow-sm">
+                        <i class="fa-solid fa-rotate text-amber-300"></i>
+                        <span>Sync / Tarik Item Baru dari Sheets</span>
+                    </button>
+                </div>
                 <div class="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
                     <i class="fa-solid fa-box text-indigo-500"></i>
                     <span id="checker-header-count">Data Pengecekan Aktif</span>
@@ -635,217 +642,57 @@
         // Helper function to process raw row into standard object format
         function parseRowData(row) {
             const docDate = formatExcelDate(row["Document Date"] || row["Doc Date"] || row["Tgl Dokumen"] || row["Tanggal"] || Object.values(row)[0] || "");
-            const vendorName = row["Vendor Name"] || row["Vendor Code"] || row["Nama Vendor"] || row["Vendor"] || Object.values(row)[2] || Object.values(row)[1] || "";
-            const plant = row["Plant"] || row["PLANT"] || Object.values(row)[4] || "";
-            const inboundNum = row["Inbound Num."] || row["Inbound Num"] || row["Inbound Number"] || row["Inbound"] || "";
-            const matDesc = row["Material Description"] || row["Mat Desc"] || row["Deskripsi Material"] || row["Material"] || "";
+            const vendorName = String(row["Vendor Name"] || row["Vendor Code"] || row["Nama Vendor"] || row["Vendor"] || Object.values(row)[2] || Object.values(row)[1] || "").trim();
+            const plant = String(row["Plant"] || row["PLANT"] || Object.values(row)[4] || "").trim();
+            const inboundNum = String(row["Inbound Num."] || row["Inbound Num"] || row["Inbound Number"] || row["Inbound"] || "").trim();
+            const matDesc = String(row["Material Description"] || row["Mat Desc"] || row["Deskripsi Material"] || row["Material"] || "").trim();
             
-            // Mengambil No. Koli & Memastikan selalu bertipe String Text murni (Simbol seperti '-' ditulis apa adanya)
+            // Mengambil No. Koli & Memastikan selalu bertipe String Text murni (Rentang seperti 1-2 atau simbol - dibaca murni sebagai teks)
             const rawKoli = row["No. Koli"] !== undefined && row["No. Koli"] !== null ? row["No. Koli"] 
                           : row["No Koli"] !== undefined && row["No Koli"] !== null ? row["No Koli"]
                           : row["Koli"] !== undefined && row["Koli"] !== null ? row["Koli"]
                           : row["NO KOLI"] !== undefined && row["NO KOLI"] !== null ? row["NO KOLI"] : "";
             
-            let noKoli = String(rawKoli).trim();
-
-            // Deteksi jika Excel mengubah rentang koli '1-5' atau '1-4' menjadi format tanggal (misal '4/5/01' atau '1-May')
-            if (noKoli.includes('/')) {
-                const parts = noKoli.split('/');
-                if (parts.length === 3) {
-                    const val1 = parseInt(parts[0], 10);
-                    const val2 = parseInt(parts[1], 10);
-                    if (!isNaN(val1) && !isNaN(val2)) {
-                        noKoli = `${val1}-${val2}`;
-                    }
-                }
-            } else if (/^\d{1,2}-[a-zA-Z]{3}$/i.test(noKoli)) {
-                const months = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 };
-                const parts = noKoli.split('-');
-                const monthNum = months[parts[1].toLowerCase()];
-                if (monthNum) {
-                    noKoli = `${parts[0]}-${monthNum}`;
-                }
-            }
-
-            const status = row["STATUS"] || row["Status"] || row["Delivery Status"] || row["Keterangan"] || "Ready on Depo";
-
-            return {
-                _original: row,
-                "Document Date": String(docDate).trim(),
-                "Vendor Name": String(vendorName).trim(),
-                "Plant": String(plant).trim(),
-                "Inbound Num.": String(inboundNum).trim(),
-                "Material Description": String(matDesc).trim(),
-                "No. Koli": noKoli,
-                "Status": String(status).trim() !== "Ready on Depo" && String(status).trim() !== "" ? String(status).trim() : "Ready on Depo"
-            };
-        }
-
-        // Import / Read directly from Google Spreadsheet Share Link
-        async function loadFromSpreadsheetLink() {
-            const inputUrl = document.getElementById('gspreadsheet-url').value.trim();
-            if (!inputUrl) {
-                showToast("Silakan masukkan link Google Spreadsheet terlebih dahulu", "error");
-                return;
-            }
-
-            let sheetId = "";
-            const matches = inputUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-            if (matches && matches[1]) {
-                sheetId = matches[1];
+            // Pembersihan khusus agar rentang koli (seperti 1-2) tidak menjadi Tanggal
+            let noKoli = "";
+            if (rawKoli instanceof Date) {
+                // Jika sheetjs sudah terlanjur mengonversi '1-2' (1 Feb) menjadi Date
+                const day = rawKoli.getDate();
+                const month = rawKoli.getMonth() + 1;
+                noKoli = `${month}-${day}`; // kembalikan ke format rentang asli '1-2'
             } else {
-                showToast("URL Google Spreadsheet tidak valid", "error");
-                return;
-            }
-
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-            showToast("Mengunduh data dari Google Sheets...", "info");
-
-            try {
-                const response = await fetch(csvUrl);
-                if (!response.ok) throw new Error("Gagal mengakses file. Pastikan izin berbagi spreadsheet set ke 'Anyone with the link'");
-                
-                const csvText = await response.text();
-                const workbook = XLSX.read(csvText, { type: 'string', raw: false });
-                const sheetName = workbook.SheetNames[0];
-                const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
-
-                if (rawJson.length === 0) {
-                    showToast("File Spreadsheet kosong", "error");
-                    return;
-                }
-
-                cargoData = rawJson.map(row => parseRowData(row));
-                saveDataLocally(true);
-                updateVendorDropdown();
-                renderTable();
-                updateViewMode();
-                showToast(`Berhasil memuat ${cargoData.length} data koli dari Google Sheets!`, "success");
-            } catch (err) {
-                console.error(err);
-                showToast(err.message || "Gagal memuat link Spreadsheet", "error");
-            }
-        }
-
-        // Upload Excel File Manual
-        function handleFileUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    // Gunakan cellText: true dan raw: false agar SheetJS mengutamakan formatted text
-                    const workbook = XLSX.read(data, { type: 'array', raw: false, cellText: true, cellDates: false });
-                    const sheetName = workbook.SheetNames[0];
-                    const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "", raw: false });
-
-                    if (rawJson.length === 0) {
-                        showToast("File Excel tidak berisi data", "error");
-                        return;
-                    }
-
-                    cargoData = rawJson.map(row => parseRowData(row));
-                    saveDataLocally(true);
-                    updateVendorDropdown();
-                    renderTable();
-                    updateViewMode();
-                    showToast(`Berhasil mengimpor ${cargoData.length} data koli!`, "success");
-                } catch (err) {
-                    console.error(err);
-                    showToast("Gagal membaca file Excel", "error");
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-        // Helper function to process raw row into standard object format
-        function parseRowData(row) {
-            const docDate = formatExcelDate(row["Document Date"] || row["Doc Date"] || row["Tgl Dokumen"] || row["Tanggal"] || Object.values(row)[0] || "");
-            const vendorName = row["Vendor Name"] || row["Vendor Code"] || row["Nama Vendor"] || row["Vendor"] || Object.values(row)[2] || Object.values(row)[1] || "";
-            const plant = row["Plant"] || row["PLANT"] || Object.values(row)[4] || "";
-            const inboundNum = row["Inbound Num."] || row["Inbound Num"] || row["Inbound Number"] || row["Inbound"] || "";
-            const matDesc = row["Material Description"] || row["Mat Desc"] || row["Deskripsi Material"] || row["Material"] || "";
-            
-            // Mengambil No. Koli & Memastikan selalu bertipe String Text murni
-            const rawKoli = row["No. Koli"] !== undefined && row["No. Koli"] !== null ? row["No. Koli"] 
-                          : row["No Koli"] !== undefined && row["No Koli"] !== null ? row["No Koli"]
-                          : row["Koli"] !== undefined && row["Koli"] !== null ? row["Koli"]
-                          : row["NO KOLI"] !== undefined && row["NO KOLI"] !== null ? row["NO KOLI"] : "";
-            
-            let noKoli = String(rawKoli).trim();
-
-            // 1. Penanganan Serial Date Angka Excel (Contoh: 36986 -> '4-5', 36925 -> '2-3')
-            const numVal = Number(noKoli);
-            if (!isNaN(numVal) && numVal > 30000 && numVal < 60000) {
-                const dateObj = new Date((numVal - (25567 + 2)) * 86400 * 1000);
-                const d1 = dateObj.getDate();
-                const d2 = dateObj.getMonth() + 1;
-                
-                const startNum = Math.min(d1, d2);
-                const endNum = Math.max(d1, d2);
-                noKoli = `${startNum}-${endNum}`;
-            }
-            // 2. Penanganan jika terdeteksi string format tanggal 'M/D/YY' atau 'D/M/YY'
-            else if (noKoli.includes('/')) {
-                const parts = noKoli.split('/');
-                if (parts.length >= 2) {
-                    const val1 = parseInt(parts[0], 10);
-                    const val2 = parseInt(parts[1], 10);
-                    if (!isNaN(val1) && !isNaN(val2)) {
-                        const startNum = Math.min(val1, val2);
-                        const endNum = Math.max(val1, val2);
-                        noKoli = `${startNum}-${endNum}`;
-                    }
-                }
-            } 
-            // 3. Penanganan jika terdeteksi format bulan teks Excel (misal: '4-May' atau '2-Mar')
-            else if (/^\d{1,2}-[a-zA-Z]{3}$/i.test(noKoli) || /^[a-zA-Z]{3}-\d{1,2}$/i.test(noKoli)) {
-                const months = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 };
-                const parts = noKoli.split('-');
-                let n1 = parseInt(parts[0], 10);
-                let n2 = parseInt(parts[1], 10);
-
-                if (isNaN(n1)) n1 = months[parts[0].toLowerCase()] || 0;
-                if (isNaN(n2)) n2 = months[parts[1].toLowerCase()] || 0;
-
-                if (n1 > 0 && n2 > 0) {
-                    const startNum = Math.min(n1, n2);
-                    const endNum = Math.max(n1, n2);
-                    noKoli = `${startNum}-${endNum}`;
-                }
-            }
-            // 4. Jika sudah berbentuk format angka rentang misal "5-4" atau "3-2"
-            else if (/^\d+-\d+$/.test(noKoli)) {
-                const parts = noKoli.split('-');
-                const val1 = parseInt(parts[0], 10);
-                const val2 = parseInt(parts[1], 10);
-                if (!isNaN(val1) && !isNaN(val2)) {
-                    const startNum = Math.min(val1, val2);
-                    const endNum = Math.max(val1, val2);
-                    noKoli = `${startNum}-${endNum}`;
+                noKoli = String(rawKoli).trim();
+                // Antisipasi format ISO YYYY-MM-DD dari Excel (misal 2026-02-01 -> 1-2)
+                if (/^\d{4}-\d{2}-\d{2}$/.test(noKoli)) {
+                    const parts = noKoli.split('-');
+                    const m = parseInt(parts[1], 10);
+                    const d = parseInt(parts[2], 10);
+                    noKoli = `${m}-${d}`;
                 }
             }
 
-            const rawStatus = String(row["STATUS"] || row["Status"] || row["Delivery Status"] || row["Keterangan"] || "").trim();
-            // Hanya set status Termuat jika file sumber secara eksplisit menyatakan 'termuat'
-            const initialStatus = rawStatus.toLowerCase().includes('termuat') ? rawStatus : "Ready on Depo";
+            // Selalu tetapkan status awal ke Ready on Depo (kecuali tertulis Termuat di Excel asli)
+            let status = "Ready on Depo";
+            const rawStatus = row["Status"] || row["STATUS"] || row["Status Koli"] || "";
+            if (String(rawStatus).toLowerCase().includes("termuat")) {
+                status = String(rawStatus).trim();
+            }
 
             return {
                 _id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                _original: row,
-                "Document Date": String(docDate).trim(),
-                "Vendor Name": String(vendorName).trim(),
-                "Plant": String(plant).trim(),
-                "Inbound Num.": String(inboundNum).trim(),
-                "Material Description": String(matDesc).trim(),
+                "Document Date": docDate,
+                "Vendor Name": vendorName,
+                "Plant": plant,
+                "Inbound Num.": inboundNum,
+                "Material Description": matDesc,
                 "No. Koli": noKoli,
-                "Status": initialStatus
+                "Status": status,
+                _original: row
             };
         }
 
-        // Import / Read directly from Google Spreadsheet Share Link
-        async function loadFromSpreadsheetLink() {
+        // Import / Read directly from Google Spreadsheet Share Link dengan fitur Merge / Smart Sync
+        async function loadFromSpreadsheetLink(isSyncMode = false) {
             const inputUrl = document.getElementById('gspreadsheet-url').value.trim();
             if (!inputUrl) {
                 showToast("Silakan masukkan link Google Spreadsheet terlebih dahulu", "error");
@@ -861,30 +708,83 @@
                 return;
             }
 
-            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-            showToast("Mengunduh data dari Google Sheets...", "info");
+            // Gunakan format tsv/csv dengan raw strings
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=tsv`;
+            showToast(isSyncMode ? "Menyinkronkan penambahan & pengurangan data..." : "Mengunduh data dari Google Sheets...", "info");
 
             try {
                 const response = await fetch(csvUrl);
                 if (!response.ok) throw new Error("Gagal mengakses file. Pastikan izin berbagi spreadsheet set ke 'Anyone with the link'");
                 
-                const csvText = await response.text();
-                const workbook = XLSX.read(csvText, { type: 'string', raw: false });
+                const tsvText = await response.text();
+                const workbook = XLSX.read(tsvText, { type: 'string', raw: true });
                 const sheetName = workbook.SheetNames[0];
-                const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+                const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "", raw: true });
 
                 if (rawJson.length === 0) {
                     showToast("File Spreadsheet kosong", "error");
                     return;
                 }
 
-                cargoData = rawJson.map(row => parseRowData(row));
+                const freshParsedData = rawJson.map(row => parseRowData(row));
+
+                if (isSyncMode && cargoData.length > 0) {
+                    // SINKRONISASI DUA ARAH (TAMBAH & HAPUS ITEM):
+                    let newItemCount = 0;
+                    let removedItemCount = 0;
+
+                    // 1. Salin status item lama yang masih ada di Spreadsheet baru
+                    freshParsedData.forEach(newItem => {
+                        const existingMatch = cargoData.find(oldItem => 
+                            String(oldItem["Inbound Num."]).trim() === String(newItem["Inbound Num."]).trim() &&
+                            String(oldItem["No. Koli"]).trim() === String(newItem["No. Koli"]).trim() &&
+                            String(oldItem["Vendor Name"]).trim() === String(newItem["Vendor Name"]).trim() &&
+                            String(oldItem["Document Date"]).trim() === String(newItem["Document Date"]).trim() &&
+                            String(oldItem["Material Description"]).trim() === String(newItem["Material Description"]).trim()
+                        );
+
+                        if (existingMatch) {
+                            // Pertahankan status muatan yang sudah dikerjakan di lapangan
+                            newItem.Status = existingMatch.Status;
+                            newItem._id = existingMatch._id;
+                        } else {
+                            newItemCount++;
+                        }
+                    });
+
+                    // 2. Hitung item lama yang sudah tidak ada lagi di Spreadsheet baru (dihapus admin)
+                    cargoData.forEach(oldItem => {
+                        const existsInFresh = freshParsedData.some(newItem => 
+                            String(newItem["Inbound Num."]).trim() === String(oldItem["Inbound Num."]).trim() &&
+                            String(newItem["No. Koli"]).trim() === String(oldItem["No. Koli"]).trim() &&
+                            String(newItem["Vendor Name"]).trim() === String(oldItem["Vendor Name"]).trim() &&
+                            String(newItem["Document Date"]).trim() === String(oldItem["Document Date"]).trim() &&
+                            String(newItem["Material Description"]).trim() === String(oldItem["Material Description"]).trim()
+                        );
+                        if (!existsInFresh) {
+                            removedItemCount++;
+                        }
+                    });
+
+                    // Update data lokal menjadi data yang paling sinkron dengan Spreadsheet terbaru
+                    cargoData = freshParsedData;
+                    
+                    let msg = "Sync selesai! ";
+                    if (newItemCount > 0) msg += `+${newItemCount} item baru. `;
+                    if (removedItemCount > 0) msg += `-${removedItemCount} item dihapus.`;
+                    if (newItemCount === 0 && removedItemCount === 0) msg += "Data sudah paling baru.";
+
+                    showToast(msg, "success");
+                } else {
+                    cargoData = freshParsedData;
+                    showToast(`Berhasil memuat ${cargoData.length} data koli dari Google Sheets!`, "success");
+                }
+
                 saveDataLocally(true);
                 updateDateDropdown();
                 updateVendorDropdown();
                 renderTable();
                 updateViewMode();
-                showToast(`Berhasil memuat ${cargoData.length} data koli dari Google Sheets!`, "success");
             } catch (err) {
                 console.error(err);
                 showToast(err.message || "Gagal memuat link Spreadsheet", "error");
@@ -948,7 +848,6 @@
             const currentSelected = selectDate.value;
             selectDate.innerHTML = '<option value="">Semua Tanggal</option>';
 
-            // Filter data yang cocok dengan pencarian & vendor yang dipilih
             const targetData = cargoData.filter(item => {
                 const matchKoli = !searchKeyword || String(item["No. Koli"]).toLowerCase().includes(searchKeyword);
                 const matchMatDesc = !searchKeyword || String(item["Material Description"]).toLowerCase().includes(searchKeyword);
@@ -972,7 +871,7 @@
             }
         }
 
-        // Update Dropdown Filter Vendor (Relational berdasarkan pencarian & filter Tanggal yang dipilih)
+        // Update Dropdown Filter Vendor (Relational berdasarkan pencarian & filter Tanggal)
         function updateVendorDropdown() {
             const selectVendor = document.getElementById('filter-vendor');
             const selectedDate = document.getElementById('filter-date') ? document.getElementById('filter-date').value : '';
@@ -982,7 +881,6 @@
             const currentSelectedVendor = selectVendor.value;
             selectVendor.innerHTML = '<option value="">Semua Vendor</option>';
 
-            // Filter data berdasarkan kata kunci pencarian & tanggal yang dipilih
             const targetData = cargoData.filter(item => {
                 const matchKoli = !searchKeyword || String(item["No. Koli"]).toLowerCase().includes(searchKeyword);
                 const matchMatDesc = !searchKeyword || String(item["Material Description"]).toLowerCase().includes(searchKeyword);
@@ -991,7 +889,6 @@
                 return matchSearch && matchDate;
             });
 
-            // Mengambil vendor unik dan mengurutkan secara alfabetis (A-Z)
             const vendors = [...new Set(targetData.map(i => i["Vendor Name"]).filter(Boolean))]
                 .sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' }));
 
@@ -1024,7 +921,6 @@
                 
                 let matchTab = true;
                 if (currentTab === 'depo') {
-                    // Pada tab Ready Depo, hanya tampilkan barang yang BELUM dimuat
                     matchTab = item.Status === 'Ready on Depo';
                 } else if (currentTab === 'unit1') {
                     matchTab = itemMatchesUnit(item.Status, 'Unit 1');
@@ -1074,7 +970,6 @@
             }
 
             data.forEach((item, index) => {
-                const isReady = item.Status === 'Ready on Depo';
                 let rowClass = 'hover:bg-slate-50';
                 let statusBtnClass = 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300';
                 let statusText = '🏬 Ready Depo';
@@ -1113,25 +1008,25 @@
             });
         }
 
-        // Action toggle status koli (Ready Depo <-> Termuat pada Unit Aktif berdasarkan ID Unik)
+        // Action toggle status koli
         function toggleItemStatus(itemId) {
             const activeUnitSelect = document.getElementById('active-unit-select');
             const activeUnit = activeUnitSelect ? activeUnitSelect.value : 'Unit 1';
             const targetUnitStatus = `Termuat (${activeUnit})`;
 
-            // Cari item spesifik berdasarkan _id uniknya
             const item = cargoData.find(i => String(i._id) === String(itemId));
 
             if (item) {
-                // Periksa apakah item saat ini sudah Termuat
                 const isAlreadyLoaded = item.Status && item.Status.toLowerCase().includes('termuat');
                 const nextStatus = isAlreadyLoaded ? 'Ready on Depo' : targetUnitStatus;
 
                 const noKoliVal = String(item["No. Koli"] || "").trim();
-                const isNoKoliEmptyOrDash = (noKoliVal === "" || noKoliVal === "-");
+                
+                // Koli dianggap per-baris individual HANYA jika kosong murni ("") atau murni simbol strip tunggal ("-")
+                const isSingleDashOrEmpty = (noKoliVal === "" || noKoliVal === "-");
 
-                if (!isNoKoliEmptyOrDash) {
-                    // 1. BULK UPDATE: Jika No. Koli valid (terisi), ubah semua item sejenis (No. Koli, Vendor Name, Document Date sama)
+                if (!isSingleDashOrEmpty) {
+                    // Jika berisi angka/rentang seperti "1-2", "1-5", "KOLI-01", dll., lakukan Bulk Update sejenis
                     let matchedCount = 0;
                     cargoData.forEach(target => {
                         const targetKoli = String(target["No. Koli"] || "").trim();
@@ -1151,7 +1046,7 @@
                         showToast(`${matchedCount} item Koli (${noKoliVal}) berhasil dimuat ke ${activeUnit}`, 'success');
                     }
                 } else {
-                    // 2. PENANDAAN MANDIRI (PER-ITEM): Jika No. Koli kosong ("") atau "-", hanya ubah baris unik ini saja
+                    // Hanya update 1 item ini saja jika No. Koli bernilai kosong/strip tunggal
                     item.Status = nextStatus;
 
                     if (isAlreadyLoaded) {
@@ -1171,25 +1066,18 @@
         function generateMultiSheetWorkbook() {
             const wb = XLSX.utils.book_new();
 
-            // Menggunakan objek data asli (_original) agar SELURUH KOLOM dari spreadsheet awal tetap utuh
             const prepareDataWithOriginalColumns = (items) => items.map((item, idx) => {
-                // Duplikasi objek asli agar tidak merusak data memori
                 const rowData = Object.assign({}, item._original || {});
                 
-                // Tambahkan/Update Nomor Urut jika belum ada
                 if (!rowData["NO"] && !rowData["No"] && !rowData["No."]) {
                     rowData["NO"] = idx + 1;
                 }
 
-                // Cari letak nama kolom Status yang digunakan di file awal, atau buatkan 'STATUS KOLI'
                 let statusKey = Object.keys(rowData).find(k => k.trim().toLowerCase() === 'status' || k.trim().toLowerCase() === 'status koli');
                 if (!statusKey) statusKey = "STATUS KOLI";
 
-                // Set status termuat / ready depo terbaru
                 rowData[statusKey] = item.Status;
 
-                // FORMAT KHUSUS KOLOM DOCUMENT DATE
-                // Cari nama kunci kolom yang berhubungan dengan Document Date
                 let docDateKey = Object.keys(rowData).find(k => {
                     const keyLower = k.trim().toLowerCase();
                     return keyLower === 'document date' || keyLower === 'doc date' || keyLower === 'tgl dokumen' || keyLower === 'tanggal';
@@ -1199,10 +1087,8 @@
                     const rawDateVal = rowData[docDateKey] || item["Document Date"];
                     const formattedDateStr = formatExcelDate(rawDateVal);
                     
-                    // Jika berisi string tanggal valid YYYY-MM-DD, ubah menjadi Objek Date sejati untuk Excel
                     if (/^\d{4}-\d{2}-\d{2}$/.test(formattedDateStr)) {
                         const parts = formattedDateStr.split('-');
-                        // Parameter Date(Year, MonthIndex 0-11, Day)
                         rowData[docDateKey] = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
                     } else {
                         rowData[docDateKey] = formattedDateStr;
@@ -1212,22 +1098,18 @@
                 return rowData;
             });
 
-            // 1. Sheet Ready Depo (Belum Termuat)
             const depoData = cargoData.filter(i => i.Status === 'Ready on Depo');
             const wsDepo = XLSX.utils.json_to_sheet(prepareDataWithOriginalColumns(depoData), { cellDates: true });
             XLSX.utils.book_append_sheet(wb, wsDepo, "Ready Depo");
 
-            // 2. Sheet Unit 1 (Termuat Unit 1)
             const unit1Data = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 1'));
             const wsUnit1 = XLSX.utils.json_to_sheet(prepareDataWithOriginalColumns(unit1Data), { cellDates: true });
             XLSX.utils.book_append_sheet(wb, wsUnit1, "Unit 1");
 
-            // 3. Sheet Unit 2 (Termuat Unit 2)
             const unit2Data = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 2'));
             const wsUnit2 = XLSX.utils.json_to_sheet(prepareDataWithOriginalColumns(unit2Data), { cellDates: true });
             XLSX.utils.book_append_sheet(wb, wsUnit2, "Unit 2");
 
-            // 4. Sheet Unit 3 (Termuat Unit 3)
             const unit3Data = cargoData.filter(i => itemMatchesUnit(i.Status, 'Unit 3'));
             const wsUnit3 = XLSX.utils.json_to_sheet(prepareDataWithOriginalColumns(unit3Data), { cellDates: true });
             XLSX.utils.book_append_sheet(wb, wsUnit3, "Unit 3");
