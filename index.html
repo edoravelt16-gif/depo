@@ -133,7 +133,7 @@
         </div>
 
         <!-- SECTION 2: Halaman Utama Pengecekan Barang (Muncul Setelah Data Dimuat) -->
-        <div id="section-checker" class="grid grid-cols-1 lg:grid-cols-12 gap-5 hidden">
+        <div id="section-checker" class="grid grid-cols-1 lg:grid-cols-12 gap-4 hidden">
             
             <!-- Tombol Kembali ke Halaman Awal (Menu Back) -->
             <div class="lg:col-span-12 flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-slate-200">
@@ -154,39 +154,39 @@
                 </div>
             </div>
 
-            <!-- Left Control Panel: Filter & Scanner (5 Cols) -->
-            <div class="lg:col-span-5 space-y-4">
+            <!-- Left Control Panel: Filter & Scanner (Diperkecil menjadi 3/12 Kolom ~ 25%) -->
+            <div class="lg:col-span-4 xl:col-span-3 space-y-3">
                 
                 <!-- Card Stats & Actions Summary -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center gap-1.5 text-emerald-700 text-xs font-bold">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-1 text-emerald-700 text-[11px] font-bold">
                             <i class="fa-solid fa-floppy-disk text-emerald-600 animate-pulse"></i>
-                            <span>Tersimpan di Memori HP/Browser</span>
+                            <span>Memori Lokal</span>
                         </div>
-                        <button onclick="showImportSection()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                            <i class="fa-solid fa-arrows-rotate mr-1"></i>Ganti Data
+                        <button onclick="showImportSection()" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium">
+                            <i class="fa-solid fa-arrows-rotate mr-0.5"></i>Ganti Data
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-                            <span class="block text-[10px] font-semibold text-amber-700 uppercase">READY ON DEPO</span>
-                            <span id="stat-ready-count" class="text-2xl font-bold text-amber-800">0</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 text-center">
+                            <span class="block text-[9px] font-bold text-amber-700 uppercase">READY DEPO</span>
+                            <span id="stat-ready-count" class="text-xl font-extrabold text-amber-800">0</span>
                         </div>
-                        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                            <span class="block text-[10px] font-semibold text-emerald-700 uppercase">TERMUAT</span>
-                            <span id="stat-termuat-count" class="text-2xl font-bold text-emerald-800">0</span>
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-center">
+                            <span class="block text-[9px] font-bold text-emerald-700 uppercase">TERMUAT</span>
+                            <span id="stat-termuat-count" class="text-xl font-extrabold text-emerald-800">0</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card Pilih Unit Armada Aktif -->
-                <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3.5 space-y-2">
-                    <label class="block text-xs font-bold text-indigo-900 flex items-center gap-1.5">
-                        <i class="fa-solid fa-truck-front text-indigo-600"></i> Pilih Unit Armada Aktif:
+                <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3 space-y-1.5">
+                    <label class="block text-[11px] font-bold text-indigo-900 flex items-center gap-1">
+                        <i class="fa-solid fa-truck-front text-indigo-600"></i> Unit Armada Aktif:
                     </label>
-                    <select id="active-unit-select" class="w-full px-3 py-2 text-xs font-bold border-2 border-indigo-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white text-indigo-900 shadow-sm cursor-pointer">
+                    <select id="active-unit-select" class="w-full px-2.5 py-1.5 text-xs font-bold border-2 border-indigo-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white text-indigo-900 shadow-sm cursor-pointer">
                         <option value="Unit 1">🚚 Unit 1 (Biru)</option>
                         <option value="Unit 2">🚛 Unit 2 (Ungu)</option>
                         <option value="Unit 3">🚚 Unit 3 (Oranye)</option>
@@ -194,17 +194,17 @@
                 </div>
 
                 <!-- Scanner & Search Filters Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 space-y-2.5">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-filter text-indigo-500"></i> Cari & Filter Koli
+                        <h3 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                            <i class="fa-solid fa-filter text-indigo-500"></i> Cari & Filter
                         </h3>
-                        <div class="flex items-center gap-1.5">
-                            <button onclick="resetFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-300 text-xs px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1">
-                                <i class="fa-solid fa-arrows-rotate text-slate-500"></i> Reset Filter
+                        <div class="flex items-center gap-1">
+                            <button onclick="resetFilters()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-300 text-[10px] px-2 py-1 rounded-md font-medium transition flex items-center gap-1">
+                                <i class="fa-solid fa-arrows-rotate text-slate-400"></i> Reset
                             </button>
-                            <button onclick="toggleScanner()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs px-2.5 py-1 rounded-lg font-medium transition flex items-center gap-1">
-                                <i class="fa-solid fa-barcode"></i> Scan Barcode
+                            <button onclick="toggleScanner()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] px-2 py-1 rounded-md font-medium transition flex items-center gap-1">
+                                <i class="fa-solid fa-barcode"></i> Scan
                             </button>
                         </div>
                     </div>
@@ -220,23 +220,23 @@
                     <!-- Input Filters -->
                     <div class="space-y-2">
                         <div>
-                            <label class="block text-[11px] font-medium text-slate-500 mb-1">Nomor Koli / Barcode / Material Desc:</label>
+                            <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Cari Koli / Part / Material:</label>
                             <div class="relative">
-                                <input type="text" id="search-koli" placeholder="Ketik / Scan No. Koli / Material..." class="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
-                                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                                <input type="text" id="search-koli" placeholder="Ketik / Scan..." class="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
+                                <i class="fa-solid fa-magnifying-glass absolute left-2 top-2 text-slate-400 text-[10px]"></i>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1.5">
                             <div>
-                                <label class="block text-[11px] font-medium text-slate-500 mb-1">Document Date:</label>
-                                <select id="filter-date" class="w-full px-2.5 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Document Date:</label>
+                                <select id="filter-date" class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                                     <option value="">Semua Tanggal</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-[11px] font-medium text-slate-500 mb-1">Nama Vendor:</label>
-                                <select id="filter-vendor" class="w-full px-2.5 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Nama Vendor:</label>
+                                <select id="filter-vendor" class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                                     <option value="">Semua Vendor</option>
                                 </select>
                             </div>
@@ -245,19 +245,19 @@
                 </div>
 
                 <!-- Action Button Save & Reset Local Memory -->
-                <div class="flex gap-2">
-                    <button onclick="manualSaveSession()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-xs py-2 px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 shadow-sm">
+                <div class="flex flex-col gap-1.5">
+                    <button onclick="manualSaveSession()" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs py-2 px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-bookmark text-emerald-400"></i> Simpan Progress Lokal
                     </button>
-                    <button onclick="resetData()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs py-2 px-3 rounded-lg font-medium transition flex items-center gap-1.5">
+                    <button onclick="resetData()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs py-1.5 px-3 rounded-lg font-medium transition flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-trash-can"></i> Reset / Sesi Baru
                     </button>
                 </div>
 
             </div>
 
-            <!-- Right Panel: Data Table & Report Export (7 Cols) -->
-            <div class="lg:col-span-7 space-y-4">
+            <!-- Right Panel: Data Table & Report Export (Diperbesar menjadi 9/12 Kolom ~ 75%) -->
+            <div class="lg:col-span-8 xl:col-span-9 space-y-4">
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full min-h-[420px]">
                     <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center gap-2">
@@ -302,7 +302,9 @@
                                     <th class="px-3 py-2.5 max-w-[150px] w-[150px]">Vendor Name</th>
                                     <th class="px-3 py-2.5">Plant</th>
                                     <th class="px-3 py-2.5">Inbound Num.</th>
+                                    <th class="px-3 py-2.5">Part Number</th>
                                     <th class="px-3 py-2.5 max-w-[150px] w-[150px]">Material Description</th>
+                                    <th class="px-3 py-2.5 text-center">Qty</th>
                                     <th class="px-3 py-2.5">No. Koli</th>
                                     <th class="px-3 py-2.5 text-right">Status Koli</th>
                                 </tr>
@@ -645,7 +647,12 @@
             const vendorName = String(row["Vendor Name"] || row["Vendor Code"] || row["Nama Vendor"] || row["Vendor"] || Object.values(row)[2] || Object.values(row)[1] || "").trim();
             const plant = String(row["Plant"] || row["PLANT"] || Object.values(row)[4] || "").trim();
             const inboundNum = String(row["Inbound Num."] || row["Inbound Num"] || row["Inbound Number"] || row["Inbound"] || "").trim();
-            const matDesc = String(row["Material Description"] || row["Mat Desc"] || row["Deskripsi Material"] || row["Material"] || "").trim();
+            
+            // Part Number & Qty Parsing
+            const partNumber = String(row["Part Number"] || row["Part No"] || row["Part No."] || row["Code"] || row["Material"] || row["Material Number"] || "").trim();
+            const qty = String(row["Qty"] || row["QTY"] || row["Quantity"] || row["Jumlah"] || "1").trim();
+
+            const matDesc = String(row["Material Description"] || row["Mat Desc"] || row["Deskripsi Material"] || row["Material Text"] || "").trim();
             
             // Mengambil No. Koli & Memastikan selalu bertipe String Text murni (Rentang seperti 1-2 atau simbol - dibaca murni sebagai teks)
             const rawKoli = row["No. Koli"] !== undefined && row["No. Koli"] !== null ? row["No. Koli"] 
@@ -684,7 +691,9 @@
                 "Vendor Name": vendorName,
                 "Plant": plant,
                 "Inbound Num.": inboundNum,
+                "Part Number": partNumber,
                 "Material Description": matDesc,
+                "Qty": qty,
                 "No. Koli": noKoli,
                 "Status": status,
                 _original: row
@@ -851,7 +860,8 @@
             const targetData = cargoData.filter(item => {
                 const matchKoli = !searchKeyword || String(item["No. Koli"]).toLowerCase().includes(searchKeyword);
                 const matchMatDesc = !searchKeyword || String(item["Material Description"]).toLowerCase().includes(searchKeyword);
-                const matchSearch = matchKoli || matchMatDesc;
+                const matchPartNo = !searchKeyword || String(item["Part Number"]).toLowerCase().includes(searchKeyword);
+                const matchSearch = matchKoli || matchMatDesc || matchPartNo;
                 const matchVendor = !selectedVendor || item["Vendor Name"] === selectedVendor;
                 return matchSearch && matchVendor;
             });
@@ -884,7 +894,8 @@
             const targetData = cargoData.filter(item => {
                 const matchKoli = !searchKeyword || String(item["No. Koli"]).toLowerCase().includes(searchKeyword);
                 const matchMatDesc = !searchKeyword || String(item["Material Description"]).toLowerCase().includes(searchKeyword);
-                const matchSearch = matchKoli || matchMatDesc;
+                const matchPartNo = !searchKeyword || String(item["Part Number"]).toLowerCase().includes(searchKeyword);
+                const matchSearch = matchKoli || matchMatDesc || matchPartNo;
                 const matchDate = !selectedDate || item["Document Date"] === selectedDate;
                 return matchSearch && matchDate;
             });
@@ -914,7 +925,8 @@
             return cargoData.filter(item => {
                 const matchKoli = !searchKeyword || String(item["No. Koli"]).toLowerCase().includes(searchKeyword);
                 const matchMatDesc = !searchKeyword || String(item["Material Description"]).toLowerCase().includes(searchKeyword);
-                const matchSearch = matchKoli || matchMatDesc;
+                const matchPartNo = !searchKeyword || String(item["Part Number"]).toLowerCase().includes(searchKeyword);
+                const matchSearch = matchKoli || matchMatDesc || matchPartNo;
 
                 const matchVendor = !filterVendor || item["Vendor Name"] === filterVendor;
                 const matchDate = !filterDate || item["Document Date"] === filterDate;
@@ -960,7 +972,7 @@
             if (data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center py-8 text-xs text-slate-400">
+                        <td colspan="10" class="text-center py-8 text-xs text-slate-400">
                             <i class="fa-solid fa-box-open text-2xl mb-2 block text-slate-300"></i>
                             Tidak ada data koli pada sheet ini
                         </td>
@@ -996,7 +1008,9 @@
                     <td class="px-3 py-2.5 font-semibold text-slate-800 max-w-[150px] w-[150px] truncate" title="${item["Vendor Name"]}">${item["Vendor Name"]}</td>
                     <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Plant"]}</td>
                     <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Inbound Num."]}</td>
+                    <td class="px-3 py-2.5 text-slate-700 font-mono font-medium">${item["Part Number"] || '-'}</td>
                     <td class="px-3 py-2.5 text-slate-600 max-w-[150px] w-[150px] truncate" title="${item["Material Description"]}">${item["Material Description"]}</td>
+                    <td class="px-3 py-2.5 text-center font-semibold text-slate-800 font-mono">${item["Qty"] || '1'}</td>
                     <td class="px-3 py-2.5 font-bold font-mono text-indigo-700 whitespace-nowrap">${item["No. Koli"] || '-'}</td>
                     <td class="px-3 py-2.5 text-right whitespace-nowrap">
                         <button onclick="toggleItemStatus('${item._id}')" class="text-[11px] font-bold px-3 py-1.5 rounded-lg border transition ${statusBtnClass}">
