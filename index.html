@@ -243,9 +243,6 @@
                     <button onclick="manualSaveSession()" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-[10px] py-1.5 px-1 rounded font-medium transition flex items-center justify-center gap-1 shadow-sm" title="Simpan Progress Lokal">
                         <i class="fa-solid fa-bookmark text-emerald-400"></i> <span class="hidden sm:inline">Simpan</span>
                     </button>
-                    <button onclick="resetData()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[10px] py-1 px-1 rounded font-medium transition flex items-center justify-center gap-1" title="Reset Sesi">
-                        <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Reset</span>
-                    </button>
                 </div>
 
             </div>
@@ -295,7 +292,7 @@
                                     <th class="px-3 py-2.5">Doc Date</th>
                                     <th class="px-3 py-2.5 max-w-[150px] w-[150px]">Vendor Name</th>
                                     <th class="px-3 py-2.5">Plant</th>
-                                    <th class="px-3 py-2.5">Inbound Num.</th>
+                                    <th class="px-3 py-2.5">Purchase Order Number</th>
                                     <th class="px-3 py-2.5">Part Number</th>
                                     <th class="px-3 py-2.5 max-w-[150px] w-[150px]">Material Description</th>
                                     <th class="px-3 py-2.5 text-center">Qty</th>
@@ -640,11 +637,20 @@
             const docDate = formatExcelDate(row["Document Date"] || row["Doc Date"] || row["Tgl Dokumen"] || row["Tanggal"] || Object.values(row)[0] || "");
             const vendorName = String(row["Vendor Name"] || row["Vendor Code"] || row["Nama Vendor"] || row["Vendor"] || Object.values(row)[2] || Object.values(row)[1] || "").trim();
             const plant = String(row["Plant"] || row["PLANT"] || Object.values(row)[4] || "").trim();
-            const inboundNum = String(row["Inbound Num."] || row["Inbound Num"] || row["Inbound Number"] || row["Inbound"] || "").trim();
             
-            // Part Number & Qty Parsing
+            // Purchase Order Number Parsing (Mendukung PO Number, PO Num, PO, Inbound Num)
+            const inboundNum = String(
+                row["Purchase Order Number"] || row["PURCHASE ORDER NUMBER"] || row["Purchase Order"] || 
+                row["PO Number"] || row["PO Num."] || row["PO Num"] || row["PO"] ||
+                row["Inbound Num."] || row["Inbound Num"] || row["Inbound Number"] || row["Inbound"] || ""
+            ).trim();
+            
+            // Part Number & Qty Parsing (Diutamakan membaca kolom 'Qty Inbound Delivery')
             const partNumber = String(row["Part Number"] || row["Part No"] || row["Part No."] || row["Code"] || row["Material"] || row["Material Number"] || "").trim();
-            const qty = String(row["Qty"] || row["QTY"] || row["Quantity"] || row["Jumlah"] || "1").trim();
+            const qty = String(
+                row["Qty Inbound Delivery"] || row["QTY INBOUND DELIVERY"] || row["Qty Inbound"] || row["Inbound Qty"] || 
+                row["Qty"] || row["QTY"] || row["Quantity"] || row["Jumlah"] || "1"
+            ).trim();
 
             const matDesc = String(row["Material Description"] || row["Mat Desc"] || row["Deskripsi Material"] || row["Material Text"] || "").trim();
             
@@ -716,10 +722,44 @@
             showToast(isSyncMode ? "Menyinkronkan penambahan & pengurangan data..." : "Mengunduh data dari Google Sheets...", "info");
 
             try {
-                const response = await fetch(csvUrl);
-                if (!response.ok) throw new Error("Gagal mengakses file. Pastikan izin berbagi spreadsheet set ke 'Anyone with the link'");
+                let tsvText = "";
                 
-                const tsvText = await response.text();
+                // Coba fetch direct terlebih dahulu
+                try {
+                    const response = await fetch(csvUrl);
+                    if (response.ok) {
+                        tsvText = await response.text();
+                    }
+                } catch (e) {
+                    console.log("Direct fetch blocked by CORS, trying fallback proxy...", e);
+                }
+
+                // Fallback 1: corsproxy.io jika direct fetch diblokir CORS browser
+                if (!tsvText) {
+                    try {
+                        const proxyUrl1 = `https://corsproxy.io/?${encodeURIComponent(csvUrl)}`;
+                        const response1 = await fetch(proxyUrl1);
+                        if (response1.ok) {
+                            tsvText = await response1.text();
+                        }
+                    } catch (e) {
+                        console.log("Proxy 1 failed, trying proxy 2...", e);
+                    }
+                }
+
+                // Fallback 2: allorigins proxy
+                if (!tsvText) {
+                    const proxyUrl2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(csvUrl)}`;
+                    const response2 = await fetch(proxyUrl2);
+                    if (response2.ok) {
+                        tsvText = await response2.text();
+                    }
+                }
+
+                if (!tsvText) {
+                    throw new Error("Gagal mengambil data. Pastikan spreadsheet di-set 'Anyone with the link can view' (Siapa saja yang memiliki link dapat melihat)");
+                }
+
                 const workbook = XLSX.read(tsvText, { type: 'string', raw: true });
                 const sheetName = workbook.SheetNames[0];
                 const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "", raw: true });
