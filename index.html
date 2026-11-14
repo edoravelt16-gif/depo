@@ -327,6 +327,40 @@
                 <button onclick="closeDriveModal()" class="text-white/80 hover:text-white text-lg px-2"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
+            <!-- Modal Body -->
+            <div class="p-4 overflow-y-auto space-y-2.5 flex-grow text-xs">
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-file-excel text-emerald-600 text-lg"></i>
+                        <div>
+                            <p class="font-bold text-slate-800">MANIFEST_EXPEDISI_SEMARANG_05NOV.xlsx</p>
+                            <p class="text-[11px] text-slate-500">05 Nov 2026 • 24 KB</p>
+                        </div>
+                    </div>
+                    <button onclick="adoptDriveFile('1')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-semibold transition">Pilih</button>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-file-excel text-emerald-600 text-lg"></i>
+                        <div>
+                            <p class="font-bold text-slate-800">REKAP_BARANG_LOAD_SURABAYA_04NOV.xlsx</p>
+                            <p class="text-[11px] text-slate-500">04 Nov 2026 • 18 KB</p>
+                        </div>
+                    </div>
+                    <button onclick="adoptDriveFile('2')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-semibold transition">Pilih</button>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
+                <button onclick="openGDriveLink()" class="text-indigo-600 hover:underline font-medium flex items-center gap-1">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Google Drive Asli
+                </button>
+                <button onclick="closeDriveModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Upload to Google Drive (Baru Ditambahkan) -->
     <div id="gdrive-upload-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col">
@@ -387,6 +421,8 @@
         const GDRIVE_FOLDER_ID = "165ImQNxt34-15gIrlmNQhfe4UMoidkgc";
         const GDRIVE_FOLDER_URL = `https://drive.google.com/drive/folders/${GDRIVE_FOLDER_ID}?usp=drive_link`;
         let cargoData = JSON.parse(localStorage.getItem('cargo_expedisi_data')) || [];
+        let currentSpreadsheetTitle = localStorage.getItem('cargo_expedisi_title') || "CHECKLIST_LOADING_BARANG";
+        let currentLoadedFileName = localStorage.getItem('cargo_expedisi_filename') || "REPORT_LOADING";
         let currentTab = 'depo'; // Active sheet tab default set ke 'depo'
         let html5QrcodeScanner = null;
 
@@ -465,6 +501,7 @@
         function saveDataLocally(silent = true) {
             try {
                 localStorage.setItem('cargo_expedisi_data', JSON.stringify(cargoData));
+                localStorage.setItem('cargo_expedisi_title', currentSpreadsheetTitle);
                 localStorage.setItem('cargo_expedisi_last_saved', new Date().toLocaleString('id-ID'));
                 const badge = document.getElementById('data-count-badge');
                 if (badge) badge.innerText = `${cargoData.length} Item Tersimpan`;
@@ -633,7 +670,9 @@
         }
 
         // Helper function to process raw row into standard object format
+        let rowCounterId = 0;
         function parseRowData(row) {
+            rowCounterId++;
             const docDate = formatExcelDate(row["Document Date"] || row["Doc Date"] || row["Tgl Dokumen"] || row["Tanggal"] || Object.values(row)[0] || "");
             const vendorName = String(row["Vendor Name"] || row["Vendor Code"] || row["Nama Vendor"] || row["Vendor"] || Object.values(row)[2] || Object.values(row)[1] || "").trim();
             const plant = String(row["Plant"] || row["PLANT"] || Object.values(row)[4] || "").trim();
@@ -686,7 +725,7 @@
             }
 
             return {
-                _id: 'item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                _id: 'item_' + rowCounterId + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
                 "Document Date": docDate,
                 "Vendor Name": vendorName,
                 "Plant": plant,
@@ -715,6 +754,25 @@
             } else {
                 showToast("URL Google Spreadsheet tidak valid", "error");
                 return;
+            }
+
+            // Coba ambil nama asli spreadsheet dari halaman publik Google Docs
+            try {
+                const htmlProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(inputUrl)}`;
+                const htmlRes = await fetch(htmlProxyUrl);
+                if (htmlRes.ok) {
+                    const htmlText = await htmlRes.text();
+                    const titleMatch = htmlText.match(/<title>([^<]+)<\/title>/);
+                    if (titleMatch && titleMatch[1]) {
+                        // Biasanya judul berformat "Nama File - Google Sheets"
+                        let cleanTitle = titleMatch[1].replace(/ - Google Sheets/i, "").trim();
+                        if (cleanTitle) {
+                            currentSpreadsheetTitle = cleanTitle.replace(/[\/\\?%*:|"<>]/g, '_'); // Bersihkan karakter ilegal nama file
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log("Gagal membaca judul web spreadsheet, menggunakan default", e);
             }
 
             // Gunakan format tsv/csv dengan raw strings
@@ -768,6 +826,10 @@
                     showToast("File Spreadsheet kosong", "error");
                     return;
                 }
+
+                // Simpan identitas nama file spreadsheet
+                currentLoadedFileName = currentSpreadsheetTitle || `SPREADSHEET_${sheetId.substring(0, 8)}`;
+                localStorage.setItem('cargo_expedisi_filename', currentLoadedFileName);
 
                 const freshParsedData = rawJson.map(row => parseRowData(row));
 
@@ -839,6 +901,11 @@
             const file = e.target.files[0];
             if (!file) return;
 
+            // Ambil nama file asli tanpa ekstensi (.xlsx / .xls / .csv)
+            let fileNameFull = file.name;
+            currentSpreadsheetTitle = fileNameFull.substring(0, fileNameFull.lastIndexOf('.')) || fileNameFull;
+            currentSpreadsheetTitle = currentSpreadsheetTitle.replace(/[\/\\?%*:|"<>]/g, '_');
+
             const reader = new FileReader();
             reader.onload = function(evt) {
                 try {
@@ -870,6 +937,9 @@
         function adoptDriveFile(fileId) {
             const file = mockDriveFiles.find(f => f.id === fileId);
             if (file && file.sampleData) {
+                currentLoadedFileName = file.name.replace(/\.(xlsx|xls|csv)$/i, '');
+                localStorage.setItem('cargo_expedisi_filename', currentLoadedFileName);
+
                 cargoData = file.sampleData.map(row => parseRowData(row));
                 saveDataLocally(true);
                 updateDateDropdown();
@@ -1027,7 +1097,7 @@
                 } else if (item.Status.includes('Unit 2')) {
                     rowClass = 'bg-purple-50/60 hover:bg-purple-100/60';
                     statusBtnClass = 'bg-purple-600 hover:bg-purple-700 text-white border-purple-700 shadow-sm';
-                    statusText = '🚚 Termuat (Unit 2)';
+                    statusText = '🚛 Termuat (Unit 2)';
                 } else if (item.Status.includes('Unit 3')) {
                     rowClass = 'bg-orange-50/60 hover:bg-orange-100/60';
                     statusBtnClass = 'bg-orange-600 hover:bg-orange-700 text-white border-orange-700 shadow-sm';
@@ -1035,19 +1105,19 @@
                 }
 
                 const tr = document.createElement('tr');
-                tr.className = `${rowClass} border-b border-slate-100 transition text-xs`;
+                tr.className = `border-b border-slate-100 text-xs transition ${rowClass}`;
                 tr.innerHTML = `
-                    <td class="px-3 py-2.5 text-slate-400 font-mono">${index + 1}</td>
-                    <td class="px-3 py-2.5 text-slate-600 font-mono whitespace-nowrap">${item["Document Date"]}</td>
-                    <td class="px-3 py-2.5 font-semibold text-slate-800 max-w-[150px] w-[150px] truncate" title="${item["Vendor Name"]}">${item["Vendor Name"]}</td>
-                    <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Plant"]}</td>
-                    <td class="px-3 py-2.5 text-slate-600 font-mono">${item["Inbound Num."]}</td>
-                    <td class="px-3 py-2.5 text-slate-700 font-mono font-medium">${item["Part Number"] || '-'}</td>
-                    <td class="px-3 py-2.5 text-slate-600 max-w-[150px] w-[150px] truncate" title="${item["Material Description"]}">${item["Material Description"]}</td>
-                    <td class="px-3 py-2.5 text-center font-semibold text-slate-800 font-mono">${item["Qty"] || '1'}</td>
-                    <td class="px-3 py-2.5 font-bold font-mono text-indigo-700 whitespace-nowrap">${item["No. Koli"] || '-'}</td>
+                    <td class="px-3 py-2.5 text-slate-500 font-medium">${index + 1}</td>
+                    <td class="px-3 py-2.5 whitespace-nowrap text-slate-700">${item["Document Date"] || "-"}</td>
+                    <td class="px-3 py-2.5 font-semibold text-slate-800 max-w-[150px] truncate" title="${item["Vendor Name"] || ""}">${item["Vendor Name"] || "-"}</td>
+                    <td class="px-3 py-2.5 text-slate-600">${item["Plant"] || "-"}</td>
+                    <td class="px-3 py-2.5 font-mono text-slate-700">${item["Inbound Num."] || "-"}</td>
+                    <td class="px-3 py-2.5 font-mono text-slate-700">${item["Part Number"] || "-"}</td>
+                    <td class="px-3 py-2.5 text-slate-700 max-w-[150px] truncate" title="${item["Material Description"] || ""}">${item["Material Description"] || "-"}</td>
+                    <td class="px-3 py-2.5 text-center font-bold text-slate-800">${item["Qty"] || "1"}</td>
+                    <td class="px-3 py-2.5 font-bold text-indigo-700">${item["No. Koli"] || "-"}</td>
                     <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                        <button onclick="toggleItemStatus('${item._id}')" class="text-[11px] font-bold px-3 py-1.5 rounded-lg border transition ${statusBtnClass}">
+                        <button onclick="toggleItemStatus('${item._id}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition cursor-pointer ${statusBtnClass}">
                             ${statusText}
                         </button>
                     </td>
@@ -1056,7 +1126,9 @@
             });
         }
 
-        // Action toggle status koli
+        // Action toggle status koli:
+        // - Jika No. Koli kosong atau '-', ubah 1 baris item spesifik yang diklik saja.
+        // - Jika No. Koli terisi, lakukan bulk update untuk item dengan No. Koli, Vendor, Tanggal, dan Status awal yang sama.
         function toggleItemStatus(itemId) {
             const activeUnitSelect = document.getElementById('active-unit-select');
             const activeUnit = activeUnitSelect ? activeUnitSelect.value : 'Unit 1';
@@ -1067,40 +1139,43 @@
             if (item) {
                 const isAlreadyLoaded = item.Status && item.Status.toLowerCase().includes('termuat');
                 const nextStatus = isAlreadyLoaded ? 'Ready on Depo' : targetUnitStatus;
-
-                const noKoliVal = String(item["No. Koli"] || "").trim();
                 
-                // Koli dianggap per-baris individual HANYA jika kosong murni ("") atau murni simbol strip tunggal ("-")
-                const isSingleDashOrEmpty = (noKoliVal === "" || noKoliVal === "-");
+                const noKoliVal = String(item["No. Koli"] || "").trim();
+                const vendorVal = String(item["Vendor Name"] || "").trim();
+                const dateVal = String(item["Document Date"] || "").trim();
+                const currentStatus = item.Status;
 
-                if (!isSingleDashOrEmpty) {
-                    // Jika berisi angka/rentang seperti "1-2", "1-5", "KOLI-01", dll., lakukan Bulk Update sejenis
-                    let matchedCount = 0;
-                    cargoData.forEach(target => {
-                        const targetKoli = String(target["No. Koli"] || "").trim();
+                // Cek apakah No. Koli terisi valid (bukan kosong dan bukan '-')
+                const hasValidKoli = noKoliVal !== "" && noKoliVal !== "-";
+
+                if (hasValidKoli) {
+                    // Bulk update untuk No. Koli, Vendor, Tanggal, dan Status awal yang sama
+                    let updatedCount = 0;
+                    cargoData.forEach(row => {
                         if (
-                            targetKoli === noKoliVal &&
-                            String(target["Vendor Name"] || "").trim() === String(item["Vendor Name"] || "").trim() &&
-                            String(target["Document Date"] || "").trim() === String(item["Document Date"] || "").trim()
+                            String(row["No. Koli"] || "").trim() === noKoliVal &&
+                            String(row["Vendor Name"] || "").trim() === vendorVal &&
+                            String(row["Document Date"] || "").trim() === dateVal &&
+                            row.Status === currentStatus
                         ) {
-                            target.Status = nextStatus;
-                            matchedCount++;
+                            row.Status = nextStatus;
+                            updatedCount++;
                         }
                     });
 
                     if (isAlreadyLoaded) {
-                        showToast(`${matchedCount} item Koli (${noKoliVal}) dikembalikan ke Ready Depo`, 'info');
+                        showToast(`${updatedCount} item Koli (${noKoliVal}) dikembalikan ke Ready Depo`, 'info');
                     } else {
-                        showToast(`${matchedCount} item Koli (${noKoliVal}) berhasil dimuat ke ${activeUnit}`, 'success');
+                        showToast(`${updatedCount} item Koli (${noKoliVal}) berhasil dimuat ke ${activeUnit}`, 'success');
                     }
                 } else {
-                    // Hanya update 1 item ini saja jika No. Koli bernilai kosong/strip tunggal
+                    // Proses 1 per 1 item saja jika No. Koli kosong atau '-'
                     item.Status = nextStatus;
 
                     if (isAlreadyLoaded) {
-                        showToast(`Item dikembalikan ke Ready Depo`, 'info');
+                        showToast(`1 item (Tanpa No. Koli) dikembalikan ke Ready Depo`, 'info');
                     } else {
-                        showToast(`Item berhasil dimuat ke ${activeUnit}`, 'success');
+                        showToast(`1 item (Tanpa No. Koli) berhasil dimuat ke ${activeUnit}`, 'success');
                     }
                 }
 
@@ -1172,8 +1247,12 @@
             }
             try {
                 const wb = generateMultiSheetWorkbook();
-                const now = new Date().toISOString().slice(0, 10);
-                XLSX.writeFile(wb, `CHECKLIST_LOADING_BARANG_${now}.xlsx`);
+                const now = new Date();
+                const dateStr = now.toISOString().slice(0, 10);
+                const timeStr = String(now.getHours()).padStart(2, '0') + '-' + String(now.getMinutes()).padStart(2, '0');
+                
+                const finalFileName = `${currentSpreadsheetTitle} - Hasil Pengecekan_${dateStr}_${timeStr}.xlsx`;
+                XLSX.writeFile(wb, finalFileName);
                 showToast("Berhasil mengunduh Laporan Excel Multi-Sheet!", "success");
             } catch (err) {
                 console.error(err);
@@ -1201,7 +1280,11 @@
             try {
                 const wb = generateMultiSheetWorkbook();
                 const excelBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-                const fileName = `CHECKLIST_LOADING_BARANG_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                
+                const now = new Date();
+                const dateStr = now.toISOString().slice(0, 10);
+                const timeStr = String(now.getHours()).padStart(2, '0') + '-' + String(now.getMinutes()).padStart(2, '0');
+                const fileName = `${currentSpreadsheetTitle} - Hasil Pengecekan_${dateStr}_${timeStr}.xlsx`;
 
                 // MASUKKAN URL WEB APP DARI GOOGLE APPS SCRIPT DI SINI
                 const webAppUrl = "https://script.google.com/macros/s/AKfycbxRmziQ_Er-PsueIN5_DBeUI3K8dM2IYnMjGRW5inAqgNePqyGtiq2T72TPJ6ozzV1iZw/exec";
